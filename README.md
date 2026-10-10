@@ -1,7 +1,8 @@
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/ITheroSolutions/mcpsteward/main/assets/logo-lockup-dark.svg">
-    <img src="https://raw.githubusercontent.com/ITheroSolutions/mcpsteward/main/assets/logo-lockup-light.svg" alt="mcpsteward" width="360">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/ITheroSolutions/mcpsteward/main/assets/logo-lockup-ink.svg">
+    <img src="https://raw.githubusercontent.com/ITheroSolutions/mcpsteward/main/assets/logo-lockup.svg" alt="mcpsteward" width="360">
   </picture>
 </h1>
 

@@ -7,6 +7,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Fixed
+
+- The logo was invisible on the npm page in npm's dark theme. npm shows only the
+  fallback image and ignores the colour scheme variants, so the fallback is now a
+  version of the logo with its own background.
+
 ## [0.1.1] - 2026-10-10
 
 ### Added
