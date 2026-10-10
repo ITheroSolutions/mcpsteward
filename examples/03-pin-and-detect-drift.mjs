@@ -1,7 +1,7 @@
 /**
  * Pin a server's surface, then detect when it changes.
  *
- * This is the durable half of mcpwarden. A conformance grade tells you about
+ * This is the durable half of mcpsteward. A conformance grade tells you about
  * today; a pin tells you whether what you approved is still what you have.
  *
  * The event this exists to catch is a tool description being rewritten after you
@@ -14,8 +14,8 @@
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
-import { captureServer, createPin, inventory } from '@itherosolutions/mcpwarden/api';
-import { diffAgainstPin } from '@itherosolutions/mcpwarden';
+import { captureServer, createPin, inventory } from 'mcpsteward/api';
+import { diffAgainstPin } from 'mcpsteward';
 
 const name = process.argv[2];
 
@@ -40,7 +40,7 @@ if (server.endpoint.transport === 'stdio') {
   }
 }
 
-const pinPath = join('.mcpwarden-example', `${server.id}.pin.json`);
+const pinPath = join('.mcpsteward-example', `${server.id}.pin.json`);
 
 const surface = await captureServer(server, { env });
 

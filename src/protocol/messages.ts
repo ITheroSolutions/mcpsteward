@@ -9,7 +9,7 @@
  * ## Why this is deliberately permissive
  *
  * A conformance prober has to send requests that are wrong on purpose. Rules like
- * MW-META-001 (the server must reject a request missing required `_meta` fields
+ * MS-META-001 (the server must reject a request missing required `_meta` fields
  * with `-32602`) can only be tested by sending exactly the request a correct client
  * is built to make impossible. So the builders here take an options bag that can
  * omit required fields, and the *correct* shape is the default rather than the only
@@ -57,7 +57,7 @@ export const JSONRPC_ERROR_CODES = {
  * Error codes this revision forbids implementations from emitting.
  *
  * Retired rather than reused, exactly as the specification retires them. See
- * MW-ERR-002.
+ * MS-ERR-002.
  */
 export const RETIRED_ERROR_CODES = {
   /** Resource not found in 2025-11-25 and earlier. Replaced by `-32602`. */
@@ -71,9 +71,9 @@ export interface Implementation {
   readonly version: string;
 }
 
-/** How mcpwarden identifies itself. Self reported, never a security control. */
+/** How mcpsteward identifies itself. Self reported, never a security control. */
 export const CLIENT_INFO: Implementation = {
-  name: 'mcpwarden',
+  name: 'mcpsteward',
   version: '0.1.0',
 };
 
@@ -89,14 +89,14 @@ export interface RequestMetaOptions {
   /**
    * Deliberately omit `io.modelcontextprotocol/protocolVersion`.
    *
-   * Only for probing MW-META-001. A conforming client never does this.
+   * Only for probing MS-META-001. A conforming client never does this.
    */
   readonly omitProtocolVersion?: boolean;
 
   /**
    * Deliberately omit `io.modelcontextprotocol/clientCapabilities`.
    *
-   * Only for probing MW-META-001. A conforming client never does this.
+   * Only for probing MS-META-001. A conforming client never does this.
    */
   readonly omitCapabilities?: boolean;
 }
@@ -164,7 +164,7 @@ export function buildRequest(options: JsonRpcRequestOptions): Record<string, unk
  * Serialise a message for the stdio transport.
  *
  * One message per line, and the message must not contain an embedded newline
- * (MW-STDIO-001). `JSON.stringify` escapes newlines inside strings, so the only
+ * (MS-STDIO-001). `JSON.stringify` escapes newlines inside strings, so the only
  * way one could appear is a bug here; the assertion makes that loud rather than
  * silently corrupting the peer's parser.
  */
@@ -183,7 +183,7 @@ export function serializeForStdio(message: unknown): string {
  * Headers a conforming client sends with a Streamable HTTP POST.
  *
  * `Mcp-Name` is required for `tools/call`, `resources/read` and `prompts/get`, and
- * carries `params.name` or `params.uri` (MW-HTTP-003). Values outside the safe
+ * carries `params.name` or `params.uri` (MS-HTTP-003). Values outside the safe
  * ASCII set are carried in the `=?base64?...?=` sentinel form.
  */
 export function buildHttpHeaders(options: {
@@ -193,7 +193,7 @@ export function buildHttpHeaders(options: {
   readonly omitProtocolVersionHeader?: boolean;
   readonly omitMethodHeader?: boolean;
   readonly omitNameHeader?: boolean;
-  /** Force a mismatched header value, for probing MW-HTTP-004. */
+  /** Force a mismatched header value, for probing MS-HTTP-004. */
   readonly overrideName?: string;
 }): Record<string, string> {
   const headers: Record<string, string> = {
@@ -217,7 +217,7 @@ export function buildHttpHeaders(options: {
   return headers;
 }
 
-/** Methods that require the `Mcp-Name` header, per MW-HTTP-003. */
+/** Methods that require the `Mcp-Name` header, per MS-HTTP-003. */
 export const METHODS_REQUIRING_NAME_HEADER = new Set([
   'tools/call',
   'resources/read',

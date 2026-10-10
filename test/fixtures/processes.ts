@@ -1,7 +1,7 @@
 /**
  * Counting leftover fixture processes.
  *
- * A transport that leaves a child behind is a real defect: `mcpwarden` spawns a
+ * A transport that leaves a child behind is a real defect: `mcpsteward` spawns a
  * process per server it inspects, so an orphan per capture would accumulate
  * silently on the machine of anybody who ran it in a loop. These helpers exist so
  * the tests can assert the absence of that.

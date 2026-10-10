@@ -81,7 +81,7 @@ jobs:
           # An earlier version of this pattern matched the bare word "ledger" and
           # so flagged dist/ledger/index.js, which is compiled source. A check
           # that cries wolf on every build is a check people learn to ignore.
-          if grep -Ei 'package/(test|tests|fixtures)/|\.test\.|\.spec\.|\.mcpwarden-ledger|/\.env|\.surface\.json|\.pin\.json|package/STATUS' contents.txt; then
+          if grep -Ei 'package/(test|tests|fixtures)/|\.test\.|\.spec\.|\.mcpsteward-ledger|/\.env|\.surface\.json|\.pin\.json|package/STATUS' contents.txt; then
             echo "ERROR: tarball contains files that must never be published"
             exit 1
           fi

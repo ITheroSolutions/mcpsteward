@@ -40,14 +40,14 @@ import { dirname } from 'node:path';
 import { createInterface } from 'node:readline';
 
 import { canonicalizeValue, hashCanonicalForm, type ContentHash } from '../core/canonical.js';
-import { LedgerCorruptionError, toMcpWardenError } from '../core/errors.js';
+import { LedgerCorruptionError, toMcpStewardError } from '../core/errors.js';
 import { NOOP_LOGGER, type Logger } from '../core/logger.js';
 import type { LedgerEntry, ServerSurface } from '../core/types.js';
 
 /** Format version. Bumping this is a breaking change to every written ledger. */
 export const LEDGER_FORMAT_VERSION = 1;
 
-export const LEDGER_MAGIC = 'mcpwarden-ledger';
+export const LEDGER_MAGIC = 'mcpsteward-ledger';
 
 /**
  * The previous hash recorded by the first entry.
@@ -220,7 +220,7 @@ export class Ledger {
     const header = parsed as Partial<LedgerHeader>;
 
     if (header.magic !== LEDGER_MAGIC) {
-      throw new LedgerCorruptionError('File is not an mcpwarden ledger', {
+      throw new LedgerCorruptionError('File is not an mcpsteward ledger', {
         details: { path: this.path },
       });
     }
@@ -287,7 +287,7 @@ export class Ledger {
       await this.readHeader();
       entries = await this.readEntries();
     } catch (error) {
-      const wrapped = toMcpWardenError(error, 'reading the ledger');
+      const wrapped = toMcpStewardError(error, 'reading the ledger');
       return { valid: false, entryCount: 0, reason: wrapped.message };
     }
 

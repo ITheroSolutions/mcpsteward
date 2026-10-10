@@ -2,17 +2,17 @@
  * stdio transport.
  *
  * Spawns a server as a child process and exchanges newline delimited JSON-RPC
- * over its standard streams (MW-STDIO-001).
+ * over its standard streams (MS-STDIO-001).
  *
  * Three things here are easy to get wrong and are handled deliberately.
  *
  * **stderr is not an error channel.** The specification is explicit that a server
  * MAY write anything to stderr and that a client SHOULD NOT treat output there as
- * indicating a problem (MW-STDIO-003). It is captured separately, bounded, and
+ * indicating a problem (MS-STDIO-003). It is captured separately, bounded, and
  * never merged into the message stream.
  *
  * **Shutdown is a sequence, not a kill.** Close stdin, wait for exit, force
- * terminate only if the server does not go (MW-STDIO-007). Servers are told to
+ * terminate only if the server does not go (MS-STDIO-007). Servers are told to
  * exit when stdin closes, and honouring that is what keeps the common case clean.
  *
  * **On Windows, killing a process does not kill its descendants.** An MCP server
@@ -262,7 +262,7 @@ export class StdioTransport {
     try {
       message = parseJsonPreservingNumbers(line);
     } catch (cause) {
-      // A server that writes non JSON to stdout has violated MW-STDIO-002. That
+      // A server that writes non JSON to stdout has violated MS-STDIO-002. That
       // is a finding the conformance engine reports, not a reason to tear down
       // the transport, so the line is dropped and recorded.
       this.logger.warn('server wrote a non JSON line to stdout', { length: line.length });
@@ -305,7 +305,7 @@ export class StdioTransport {
   }
 
   private onStderr(chunk: string): void {
-    // Bounded, and never interpreted. MW-STDIO-003 is explicit that stderr
+    // Bounded, and never interpreted. MS-STDIO-003 is explicit that stderr
     // output does not indicate an error condition.
     if (this.stderrBytes >= MAX_STDERR_BYTES) return;
 
@@ -483,7 +483,7 @@ export class StdioTransport {
     if (this.exited) return;
 
     // Step one: close stdin. Servers SHOULD exit on end of file, and this is the
-    // only portable graceful signal (MW-STDIO-007).
+    // only portable graceful signal (MS-STDIO-007).
     try {
       child.stdin.end();
     } catch {

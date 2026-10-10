@@ -1,5 +1,5 @@
 {
-  "name": "@itherosolutions/mcpwarden",
+  "name": "mcpsteward",
   "version": "0.1.0",
   "description": "Local-first MCP server inspection and trust toolkit. Conformance grading against the 2026-07-28 specification plus a tamper-evident surface ledger. No cloud, no account, no LLM.",
   "keywords": [
@@ -20,8 +20,8 @@
     "node": ">=20.10.0"
   },
   "bin": {
-    "mcpwarden": "dist/cli/index.js",
-    "mcpwarden-mcp": "dist/mcp/index.js"
+    "mcpsteward": "dist/cli/index.js",
+    "mcpsteward-mcp": "dist/mcp/index.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -112,11 +112,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ITheroSolutions/mcpwarden.git"
+    "url": "git+https://github.com/ITheroSolutions/mcpsteward.git"
   },
-  "homepage": "https://github.com/ITheroSolutions/mcpwarden#readme",
+  "homepage": "https://github.com/ITheroSolutions/mcpsteward#readme",
   "bugs": {
-    "url": "https://github.com/ITheroSolutions/mcpwarden/issues"
+    "url": "https://github.com/ITheroSolutions/mcpsteward/issues"
   },
   "publishConfig": {
     "access": "public"

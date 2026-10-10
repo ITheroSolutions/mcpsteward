@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
- * mcpwarden as an MCP server.
+ * mcpsteward as an MCP server.
  *
  * Exposes the toolkit over stdio so an agent can inspect its own tool surface, or
  * a host can drive discovery, conformance and drift without shelling out.
  *
  * ## Dogfooding
  *
- * This server implements the 2026-07-28 revision and is graded by mcpwarden's own
+ * This server implements the 2026-07-28 revision and is graded by mcpsteward's own
  * conformance engine as part of the test suite, at grade A. That is the strongest
  * credibility signal this package can offer: a tool that grades MCP servers and
  * cannot pass its own grader is not worth running.
@@ -29,7 +29,7 @@ import { createInterface } from 'node:readline';
 
 import { grade } from '../conformance/index.js';
 import { isEntryPoint } from '../core/entry.js';
-import { toMcpWardenError } from '../core/errors.js';
+import { toMcpStewardError } from '../core/errors.js';
 import { isJsonNumber, parseJsonPreservingNumbers, type JsonValue } from '../core/json-parse.js';
 import { redactDeep } from '../core/redaction.js';
 import { TARGET_REVISION } from '../core/revisions.js';
@@ -263,7 +263,7 @@ function diagnostic(text: string): void {
 
 const SERVER_META = {
   _meta: {
-    'io.modelcontextprotocol/serverInfo': { name: 'mcpwarden', version: VERSION },
+    'io.modelcontextprotocol/serverInfo': { name: 'mcpsteward', version: VERSION },
   },
 };
 
@@ -291,7 +291,7 @@ export interface ConnectionState {
 /** The handshake era revisions this server answers `initialize` for. */
 const LEGACY_REVISIONS: readonly string[] = ['2025-11-25', '2025-06-18', '2025-03-26'];
 
-/** Caching hints, required on every complete list result by MW-CACHE-001. */
+/** Caching hints, required on every complete list result by MS-CACHE-001. */
 function cacheable<T extends Record<string, unknown>>(body: T): T & Record<string, unknown> {
   return { ...body, ttlMs: TTL_MS, cacheScope: 'public' };
 }
@@ -324,7 +324,7 @@ export async function handleRequest(
       result: {
         protocolVersion: agreed,
         capabilities: { tools: {} },
-        serverInfo: { name: 'mcpwarden', version: VERSION },
+        serverInfo: { name: 'mcpsteward', version: VERSION },
         instructions: INSTRUCTIONS,
       },
     });
@@ -336,7 +336,7 @@ export async function handleRequest(
     return;
   }
 
-  // MW-META-001: a request missing a required _meta field is malformed.
+  // MS-META-001: a request missing a required _meta field is malformed.
   if (typeof requested !== 'string') {
     respondError(id, -32602, 'Missing io.modelcontextprotocol/protocolVersion in _meta');
     return;
@@ -347,7 +347,7 @@ export async function handleRequest(
     return;
   }
 
-  // MW-ERR-006: an unsupported version carries the list this server does support.
+  // MS-ERR-006: an unsupported version carries the list this server does support.
   if (requested !== TARGET_REVISION) {
     respondError(id, -32022, 'Unsupported protocol version', {
       supported: [TARGET_REVISION],
@@ -357,7 +357,7 @@ export async function handleRequest(
   }
 
   switch (method) {
-    // MW-LIFE-001: servers MUST implement server/discover.
+    // MS-LIFE-001: servers MUST implement server/discover.
     case 'server/discover':
       respond(
         id,
@@ -373,7 +373,7 @@ export async function handleRequest(
       respond(
         id,
         cacheable({
-          // MW-TOOL-002: a deterministic order lets clients cache the list.
+          // MS-TOOL-002: a deterministic order lets clients cache the list.
           tools: listedTools().map((tool) => ({
               name: tool.name,
               description: tool.description,
@@ -394,7 +394,7 @@ export async function handleRequest(
     }
 
     default:
-      // MW-LIFE-007: ping and logging/setLevel were removed, so they land here.
+      // MS-LIFE-007: ping and logging/setLevel were removed, so they land here.
       respondError(id, -32601, `Method not found: ${describeMethod(method)}`);
   }
 }
@@ -405,7 +405,7 @@ const INSTRUCTIONS =
   'and check_policy read local files and connect to nothing. capture_surface, ' +
   'check_conformance and diff_against_trust start the server being inspected.';
 
-/** MW-TOOL-002: a deterministic order lets clients cache the list. */
+/** MS-TOOL-002: a deterministic order lets clients cache the list. */
 function listedTools(): readonly (typeof TOOLS)[number][] {
   return [...TOOLS].sort((a, b) => a.name.localeCompare(b.name));
 }
@@ -428,7 +428,7 @@ async function callTool(
   } catch (error) {
     // A failed tool call is a result, not a protocol error. The model needs to
     // see what went wrong so it can choose differently.
-    const wrapped = toMcpWardenError(error, `calling ${tool.name}`);
+    const wrapped = toMcpStewardError(error, `calling ${tool.name}`);
 
     return {
       content: [{ type: 'text', text: `${wrapped.code}: ${wrapped.message}` }],
@@ -554,17 +554,17 @@ export function serve(): void {
     }
 
     void handleRequest(asObject(request), state).catch((error: unknown) => {
-      const wrapped = toMcpWardenError(error, 'handling a request');
+      const wrapped = toMcpStewardError(error, 'handling a request');
       diagnostic(`internal error: ${wrapped.message}`);
     });
   });
 
-  // MW-STDIO-006: exit promptly when stdin closes.
+  // MS-STDIO-006: exit promptly when stdin closes.
   reader.on('close', () => {
     process.exit(0);
   });
 
-  diagnostic(`mcpwarden ${VERSION} MCP server ready, speaking ${TARGET_REVISION}`);
+  diagnostic(`mcpsteward ${VERSION} MCP server ready, speaking ${TARGET_REVISION}`);
 }
 
 /* c8 ignore start -- the process entry point is exercised by subprocess tests */

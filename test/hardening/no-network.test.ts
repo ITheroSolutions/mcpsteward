@@ -28,7 +28,7 @@ let originalSocketConnect: Socket['connect'];
 let originalTlsConnect: TLSSocket['connect'];
 
 beforeEach(async () => {
-  root = await mkdtemp(join(tmpdir(), 'mcpwarden-network-'));
+  root = await mkdtemp(join(tmpdir(), 'mcpsteward-network-'));
   attempts.length = 0;
 
   // ES module namespaces are frozen, so `node:http` and friends cannot be
@@ -178,7 +178,7 @@ describe('policy check reaches the network never', () => {
 
 describe('canonicalization reaches the network never', () => {
   it('never dereferences a remote $ref in a schema', async () => {
-    // MW-TOOL-004: implementations MUST NOT automatically dereference a $ref
+    // MS-TOOL-004: implementations MUST NOT automatically dereference a $ref
     // that resolves to a network URI. A server controls this string, so a
     // dereferencing client would fetch a URL of the server's choosing every time
     // it listed tools.

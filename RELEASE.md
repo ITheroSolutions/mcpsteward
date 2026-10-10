@@ -1,6 +1,6 @@
 # Release checklist
 
-How to cut a release of `mcpwarden`, and what to settle before the first one.
+How to cut a release of `mcpsteward`, and what to settle before the first one.
 
 ---
 
@@ -9,13 +9,13 @@ How to cut a release of `mcpwarden`, and what to settle before the first one.
 ### 1. Confirm the package name is still free
 
 ```bash
-npm view @itherosolutions/mcpwarden
+npm view mcpsteward
 ```
 
-A `404` means it is available. The unscoped name `mcpwarden` cannot be used: npm
-rejects it at publish time as too similar to the existing, unrelated package
-`mcp-warden`. That check only runs on upload, so `npm view mcpwarden` reporting a 404
-says nothing about it.
+A `404` means nobody holds that exact name. It does not mean npm will accept it: npm
+also rejects, at publish time only, a name that differs from an existing package by
+nothing but punctuation. This project's first name was refused that way. Before
+relying on a 404, check the hyphen, underscore and dot variants of the name too.
 
 ### 2. Decide on the unconfirmed client paths
 
@@ -61,7 +61,7 @@ npm run build && npm run docs:rules && npm run docs:check
 # 4. Inspect the tarball one more time.
 mkdir -p ./.pack
 npm pack --pack-destination ./.pack
-tar -tzf .pack/itherosolutions-mcpwarden-0.1.0.tgz | sort
+tar -tzf .pack/mcpsteward-0.1.0.tgz | sort
 
 # 5. Dry run.
 npm publish --dry-run
@@ -71,7 +71,7 @@ npm publish --dry-run
 npm publish --access public
 
 # 7. Tag and push.
-git tag -a v0.1.0 -m "mcpwarden 0.1.0"
+git tag -a v0.1.0 -m "mcpsteward 0.1.0"
 git push origin v0.1.0
 ```
 
@@ -92,11 +92,11 @@ no automatic path from a merge to a published package.
 
 ```bash
 # Confirm it installs from the registry rather than from disk.
-cd $(mktemp -d) && npm init -y && npm install @itherosolutions/mcpwarden
-node -e "import('@itherosolutions/mcpwarden').then(m => console.log(m.TARGET_REVISION))"
+cd $(mktemp -d) && npm init -y && npm install mcpsteward
+node -e "import('mcpsteward').then(m => console.log(m.TARGET_REVISION))"
 
 # Confirm the CLI works when installed globally.
-npx @itherosolutions/mcpwarden doctor
+npx mcpsteward doctor
 ```
 
 ---

@@ -61,7 +61,7 @@ describe('era probe', () => {
   }, 30_000);
 
   it('identifies a modern server as modern', async () => {
-    const outcome = await connect(MODERN, { MCPWARDEN_FIXTURE_MODE: 'conforming' }).discover(
+    const outcome = await connect(MODERN, { MCPSTEWARD_FIXTURE_MODE: 'conforming' }).discover(
       '2026-07-28',
     );
 
@@ -73,7 +73,7 @@ describe('era probe', () => {
     // Both answer -32601, and the specification says the error code alone cannot
     // distinguish them. The probe reports what it saw rather than guessing; the
     // ambiguity is resolved later by attempting the handshake.
-    const outcome = await connect(MODERN, { MCPWARDEN_FIXTURE_MODE: 'no-discover' }).discover(
+    const outcome = await connect(MODERN, { MCPSTEWARD_FIXTURE_MODE: 'no-discover' }).discover(
       '2026-07-28',
     );
 
@@ -151,10 +151,10 @@ describe('capturing a legacy server', () => {
 describe('resolving the ambiguous probe result', () => {
   it('still captures a modern server that fails to implement server/discover', async () => {
     // The over-correction this guards against. Treating every -32601 as legacy
-    // made mcpwarden unable to inspect a non conforming modern server, which is
+    // made mcpsteward unable to inspect a non conforming modern server, which is
     // precisely the server it exists to inspect. The handshake is attempted and,
     // when refused, the capture proceeds as modern.
-    const captured = await connect(MODERN, { MCPWARDEN_FIXTURE_MODE: 'no-discover' }).capture(
+    const captured = await connect(MODERN, { MCPSTEWARD_FIXTURE_MODE: 'no-discover' }).capture(
       serverRef(MODERN, 'modern-no-discover'),
       'stdio',
     );
@@ -165,7 +165,7 @@ describe('resolving the ambiguous probe result', () => {
   }, 30_000);
 
   it('reports the missing method as a conformance finding rather than hiding it', async () => {
-    const captured = await connect(MODERN, { MCPWARDEN_FIXTURE_MODE: 'no-discover' }).capture(
+    const captured = await connect(MODERN, { MCPSTEWARD_FIXTURE_MODE: 'no-discover' }).capture(
       serverRef(MODERN, 'modern-no-discover'),
       'stdio',
     );
@@ -176,7 +176,7 @@ describe('resolving the ambiguous probe result', () => {
 
 describe('a modern capture is unaffected', () => {
   it('records no downgrade for a modern server', async () => {
-    const captured = await connect(MODERN, { MCPWARDEN_FIXTURE_MODE: 'conforming' }).capture(
+    const captured = await connect(MODERN, { MCPSTEWARD_FIXTURE_MODE: 'conforming' }).capture(
       serverRef(MODERN, 'modern'),
       'stdio',
     );
@@ -205,7 +205,7 @@ describe('grading a legacy server', () => {
   }, 30_000);
 
   it('still grades a modern server normally', async () => {
-    const captured = await connect(MODERN, { MCPWARDEN_FIXTURE_MODE: 'conforming' }).capture(
+    const captured = await connect(MODERN, { MCPSTEWARD_FIXTURE_MODE: 'conforming' }).capture(
       serverRef(MODERN, 'modern'),
       'stdio',
     );

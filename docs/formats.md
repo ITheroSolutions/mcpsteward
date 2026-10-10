@@ -1,7 +1,7 @@
 # On disk formats
 
 This document specifies the ledger and pin formats precisely enough that someone
-could write an independent verifier without reading the mcpwarden source.
+could write an independent verifier without reading the mcpsteward source.
 
 That matters more than it might appear. A trust format only one implementation can
 check is not a trust format: if the tool that wrote the ledger is the only thing
@@ -36,7 +36,7 @@ hash and a verifier must reject it.
 
 Two reasons. Algorithm agility, so a future change of hash is distinguishable
 rather than silently producing values that look identical to the old ones. And
-mcpwarden's own redaction pass treats a `sha256:` prefixed string as a trusted
+mcpsteward's own redaction pass treats a `sha256:` prefixed string as a trusted
 value it must not touch, while a bare 64 character hex run matches its high entropy
 heuristic and would be destroyed before reaching a report.
 
@@ -82,7 +82,7 @@ exists to measure.
 
 ### 2.3 Numbers, the deviation
 
-**This is where mcpwarden departs from RFC 8785, deliberately.**
+**This is where mcpsteward departs from RFC 8785, deliberately.**
 
 RFC 8785 serialises numbers using ECMAScript `Number::toString`, which means
 routing every number through an IEEE 754 double. For an interoperability oriented
@@ -284,10 +284,10 @@ interrupted write damages exactly one line.
 ### 5.2 Header
 
 ```json
-{ "magic": "mcpwarden-ledger", "version": 1, "createdAt": "<ISO 8601 UTC>" }
+{ "magic": "mcpsteward-ledger", "version": 1, "createdAt": "<ISO 8601 UTC>" }
 ```
 
-A verifier must reject a file whose `magic` is not exactly `mcpwarden-ledger`, and
+A verifier must reject a file whose `magic` is not exactly `mcpsteward-ledger`, and
 must reject a `version` it does not implement rather than attempting a best effort
 read.
 
@@ -320,8 +320,8 @@ records the older one here.
 The `previousHash` of entry 0 is a fixed constant:
 
 ```
-GENESIS = sha256( utf8("mcpwarden-ledger/v1/genesis") )
-        = sha256:23a62bbb0c5d90f6a71fcb70fe6d6bf6b49276193fde482869ccbb9d822ebc05
+GENESIS = sha256( utf8("mcpsteward-ledger/v1/genesis") )
+        = sha256:2fe8269467a2d234aca03035f5f6dab4a4ecbd4d9c4c7b0b20beea650a486865
 ```
 
 The input is the **raw UTF-8 bytes** of that string. It is not wrapped in JSON
@@ -503,7 +503,7 @@ A verifier needs, in order:
    in section 4.1 and the promotion rule in step 4 of section 4.2.
 5. The chain walk of section 5.6.
 
-If an independent implementation disagrees with mcpwarden about a hash, the number
+If an independent implementation disagrees with mcpsteward about a hash, the number
 handling in section 2.3 is the first place to look, and the second is whether raw
 digest bytes rather than hex characters are being fed into the merkle prefixes.
 

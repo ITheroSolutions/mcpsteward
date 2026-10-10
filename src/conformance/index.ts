@@ -142,7 +142,7 @@ export function grade(context: RuleContext): ConformanceReport {
   // is captured, never graded.
   const reason =
     revision !== TARGET_REVISION
-      ? `This server speaks ${revision}. mcpwarden grades conformance to ${TARGET_REVISION} only, ` +
+      ? `This server speaks ${revision}. mcpsteward grades conformance to ${TARGET_REVISION} only, ` +
         `so the server does not implement the revision being graded. Its surface was still ` +
         `captured and can be pinned and diffed.`
       : possible === 0

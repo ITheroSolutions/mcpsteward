@@ -3,7 +3,7 @@
  * A handshake era stdio server that is strict about the handshake, the way the
  * Python MCP SDK is: every request before `notifications/initialized` arrives is
  * refused. The SDK built legacy fixture is lenient and would not notice a client
- * that never sends the notification, which is exactly how mcpwarden came to never
+ * that never sends the notification, which is exactly how mcpsteward came to never
  * send it on stdio without any test failing.
  */
 

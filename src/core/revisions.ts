@@ -13,7 +13,7 @@ export const SUPPORTED_REVISIONS = ['2026-07-28', '2025-11-25'] as const;
 export type ProtocolRevision = (typeof SUPPORTED_REVISIONS)[number];
 
 /**
- * The revision mcpwarden grades against. Capture works on every supported
+ * The revision mcpsteward grades against. Capture works on every supported
  * revision; conformance grading targets this one only. See DECISIONS.md D-003.
  */
 export const TARGET_REVISION = '2026-07-28' satisfies ProtocolRevision;
@@ -33,7 +33,7 @@ const ERA_BY_REVISION: Readonly<Record<ProtocolRevision, ProtocolEra>> = {
 
 /**
  * Revisions known to the specification but not implemented here. Recognising them
- * lets mcpwarden report "this server speaks a revision I do not grade" rather than
+ * lets mcpsteward report "this server speaks a revision I do not grade" rather than
  * the less useful "unknown revision".
  *
  * Sourced from the changelog's compatibility discussion and the transport page's

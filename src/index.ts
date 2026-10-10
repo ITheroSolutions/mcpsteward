@@ -1,8 +1,8 @@
 /**
- * mcpwarden: local-first MCP server inspection and trust toolkit.
+ * mcpsteward: local-first MCP server inspection and trust toolkit.
  *
- * Public entry point. Subpath exports (`mcpwarden/core`, `mcpwarden/protocol`,
- * `mcpwarden/conformance`, `mcpwarden/ledger`, `mcpwarden/mcp`) expose the
+ * Public entry point. Subpath exports (`mcpsteward/core`, `mcpsteward/protocol`,
+ * `mcpsteward/conformance`, `mcpsteward/ledger`, `mcpsteward/mcp`) expose the
  * individual faculties; this module re-exports the stable surface most consumers
  * need.
  */
@@ -40,19 +40,19 @@ export {
   ERROR_CODES,
   hasErrorCode,
   InternalError,
-  isMcpWardenError,
+  isMcpStewardError,
   LedgerCorruptionError,
-  McpWardenError,
+  McpStewardError,
   PolicyViolationError,
   ProtocolViolationError,
   TimeoutError,
-  toMcpWardenError,
+  toMcpStewardError,
   TransportError,
   UnsupportedRevisionError,
   VersionNegotiationError,
 } from './core/errors.js';
 
-export type { ErrorCode, ErrorDetails, McpWardenErrorOptions } from './core/errors.js';
+export type { ErrorCode, ErrorDetails, McpStewardErrorOptions } from './core/errors.js';
 
 export {
   canonicalizeJsonText,
@@ -268,6 +268,6 @@ export {
 
 export type {
   ConfigOverrides,
-  McpWardenConfig,
+  McpStewardConfig,
   ResolveConfigInput,
 } from './core/config.js';

@@ -2,7 +2,7 @@
  * HTTP servers that behave the way real hosted MCP servers were observed to.
  *
  * The conforming fixture in http-server.mjs is a model citizen. These are not.
- * Each mode reproduces a response seen from a real server when mcpwarden was first
+ * Each mode reproduces a response seen from a real server when mcpsteward was first
  * pointed at one, so the tests pin the behaviour against the actual shapes:
  *
  * - `auth-vendor-json`: 401 with a challenge and a vendor error body such as

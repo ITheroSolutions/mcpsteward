@@ -6,7 +6,7 @@
  * varied through the `mode` option so one implementation can act as the correct
  * server and several specifically broken ones.
  *
- * Binds to 127.0.0.1 only, per MW-HTTP-010.
+ * Binds to 127.0.0.1 only, per MS-HTTP-010.
  */
 
 import { createServer } from 'node:http';
@@ -47,7 +47,7 @@ export async function startHttpFixture({ mode = 'conforming' } = {}) {
         body: bodyText,
       });
 
-      // MW-HTTP-011: a server supporting only this revision responds 405 to GET
+      // MS-HTTP-011: a server supporting only this revision responds 405 to GET
       // and DELETE on the MCP endpoint.
       if (req.method !== 'POST') {
         if (mode === 'allows-get') {
@@ -60,7 +60,7 @@ export async function startHttpFixture({ mode = 'conforming' } = {}) {
         return;
       }
 
-      // MW-HTTP-009: validate Origin, reject an invalid one with 403.
+      // MS-HTTP-009: validate Origin, reject an invalid one with 403.
       const origin = req.headers['origin'];
       if (origin !== undefined && mode !== 'ignores-origin') {
         if (!origin.startsWith('http://127.0.0.1') && !origin.startsWith('http://localhost')) {
@@ -95,7 +95,7 @@ export async function startHttpFixture({ mode = 'conforming' } = {}) {
         );
       };
 
-      // MW-HTTP-004: reject a header that disagrees with the body, 400 + -32020.
+      // MS-HTTP-004: reject a header that disagrees with the body, 400 + -32020.
       if (mode !== 'ignores-header-mismatch') {
         if (headerVersion === undefined) {
           fail(400, -32020, 'Missing MCP-Protocol-Version header');
@@ -115,7 +115,7 @@ export async function startHttpFixture({ mode = 'conforming' } = {}) {
         }
       }
 
-      // MW-META-001: a request missing a required _meta field is malformed.
+      // MS-META-001: a request missing a required _meta field is malformed.
       if (bodyVersion === undefined) {
         fail(400, -32602, 'Missing io.modelcontextprotocol/protocolVersion in _meta');
         return;
@@ -125,7 +125,7 @@ export async function startHttpFixture({ mode = 'conforming' } = {}) {
         return;
       }
 
-      // MW-ERR-006: unsupported version returns -32022 with supported and requested.
+      // MS-ERR-006: unsupported version returns -32022 with supported and requested.
       if (bodyVersion !== REVISION) {
         fail(400, -32022, 'Unsupported protocol version', {
           supported: [REVISION],
@@ -177,7 +177,7 @@ export async function startHttpFixture({ mode = 'conforming' } = {}) {
               {
                 supportedVersions: [REVISION],
                 capabilities: { tools: {} },
-                instructions: 'An HTTP fixture server used only by the mcpwarden test suite.',
+                instructions: 'An HTTP fixture server used only by the mcpsteward test suite.',
               },
               mode,
             ),
@@ -189,7 +189,7 @@ export async function startHttpFixture({ mode = 'conforming' } = {}) {
           return;
 
         default:
-          // MW-HTTP-005: an unimplemented method is 404 with -32601.
+          // MS-HTTP-005: an unimplemented method is 404 with -32601.
           fail(404, -32601, `Method not found: ${request.method}`);
       }
     });

@@ -1,8 +1,8 @@
-# Contributing to mcpwarden
+# Contributing to mcpsteward
 
 ## Ground rules
 
-mcpwarden makes three promises that constrain every contribution:
+mcpsteward makes three promises that constrain every contribution:
 
 1. **No cloud, no account, no telemetry.** The only network access at runtime is
    connecting to the MCP servers the user explicitly asked to inspect.

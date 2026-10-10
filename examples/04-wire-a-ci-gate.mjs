@@ -14,10 +14,10 @@
 
 import { readFile } from 'node:fs/promises';
 
-import { evaluatePolicy, inventory } from '@itherosolutions/mcpwarden/api';
-import { initPolicy, parsePolicy } from '@itherosolutions/mcpwarden';
+import { evaluatePolicy, inventory } from 'mcpsteward/api';
+import { initPolicy, parsePolicy } from 'mcpsteward';
 
-const policyPath = process.argv[2] ?? 'mcpwarden.policy.json';
+const policyPath = process.argv[2] ?? 'mcpsteward.policy.json';
 
 const machine = await inventory();
 

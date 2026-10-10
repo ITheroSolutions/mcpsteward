@@ -8,13 +8,13 @@ import {
   ERROR_CODES,
   hasErrorCode,
   InternalError,
-  isMcpWardenError,
+  isMcpStewardError,
   LedgerCorruptionError,
-  McpWardenError,
+  McpStewardError,
   PolicyViolationError,
   ProtocolViolationError,
   TimeoutError,
-  toMcpWardenError,
+  toMcpStewardError,
   TransportError,
   UnsupportedRevisionError,
   VersionNegotiationError,
@@ -43,11 +43,11 @@ describe('error taxonomy shape', () => {
         expect(new Ctor('something went wrong').code).toBe(code);
       });
 
-      it('is an Error and an McpWardenError', () => {
+      it('is an Error and an McpStewardError', () => {
         const error = new Ctor('something went wrong');
         expect(error).toBeInstanceOf(Error);
-        expect(error).toBeInstanceOf(McpWardenError);
-        expect(isMcpWardenError(error)).toBe(true);
+        expect(error).toBeInstanceOf(McpStewardError);
+        expect(isMcpStewardError(error)).toBe(true);
       });
 
       it('reports its own class name rather than the base name', () => {
@@ -166,7 +166,7 @@ describe('toJSON', () => {
     expect(error.toJSON().cause).toBe('Error: ENOENT: no such file or directory');
   });
 
-  it('describes a nested McpWardenError cause by its code', () => {
+  it('describes a nested McpStewardError cause by its code', () => {
     const inner = new TimeoutError('capture exceeded 5000ms');
     const outer = new DiscoveryError('inventory failed', { cause: inner });
 
@@ -203,15 +203,15 @@ describe('hasErrorCode', () => {
   });
 });
 
-describe('toMcpWardenError', () => {
+describe('toMcpStewardError', () => {
   it('passes through an error that is already ours, unchanged', () => {
     const original = new TimeoutError('capture exceeded 5000ms');
-    expect(toMcpWardenError(original, 'while capturing')).toBe(original);
+    expect(toMcpStewardError(original, 'while capturing')).toBe(original);
   });
 
   it('wraps a foreign Error as INTERNAL and keeps the cause', () => {
     const foreign = new TypeError('cannot read properties of undefined');
-    const wrapped = toMcpWardenError(foreign, 'while parsing config');
+    const wrapped = toMcpStewardError(foreign, 'while parsing config');
 
     expect(wrapped.code).toBe('INTERNAL');
     expect(wrapped.message).toContain('while parsing config');
@@ -220,18 +220,18 @@ describe('toMcpWardenError', () => {
   });
 
   it('wraps a thrown non Error value', () => {
-    const wrapped = toMcpWardenError('a bare string throw', 'while doing a thing');
+    const wrapped = toMcpStewardError('a bare string throw', 'while doing a thing');
     expect(wrapped.code).toBe('INTERNAL');
     expect(wrapped.message).toContain('a bare string throw');
   });
 
   it('redacts a secret carried by a foreign error', () => {
-    const wrapped = toMcpWardenError(new Error(`token ${SECRET} rejected`), 'while connecting');
+    const wrapped = toMcpStewardError(new Error(`token ${SECRET} rejected`), 'while connecting');
     expect(wrapped.message).not.toContain(SECRET);
   });
 
   it('wraps null and undefined without throwing', () => {
-    expect(toMcpWardenError(null, 'ctx').code).toBe('INTERNAL');
-    expect(toMcpWardenError(undefined, 'ctx').code).toBe('INTERNAL');
+    expect(toMcpStewardError(null, 'ctx').code).toBe('INTERNAL');
+    expect(toMcpStewardError(undefined, 'ctx').code).toBe('INTERNAL');
   });
 });

@@ -23,7 +23,7 @@ import {
 let root: string;
 
 beforeEach(async () => {
-  root = await mkdtemp(join(tmpdir(), 'mcpwarden-trust-'));
+  root = await mkdtemp(join(tmpdir(), 'mcpsteward-trust-'));
 });
 
 afterEach(async () => {

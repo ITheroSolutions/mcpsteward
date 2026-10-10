@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { canonicalizeJsonText, canonicalizeValue } from '../../src/core/canonical.js';
 import { parseConfigFile } from '../../src/core/config.js';
-import { isMcpWardenError } from '../../src/core/errors.js';
+import { isMcpStewardError } from '../../src/core/errors.js';
 import { parseJsonPreservingNumbers } from '../../src/core/json-parse.js';
 import { identityOf, parseClientConfig } from '../../src/discovery/parse.js';
 import { parsePolicy } from '../../src/policy/index.js';
@@ -103,7 +103,7 @@ describe('the JSON parser', () => {
         parseJsonPreservingNumbers(input);
       } catch (error) {
         expect(
-          isMcpWardenError(error),
+          isMcpStewardError(error),
           `untyped throw for ${JSON.stringify(input.slice(0, 40))}: ${String(error)}`,
         ).toBe(true);
       }
@@ -143,7 +143,7 @@ describe('the JSON parser', () => {
       try {
         parseJsonPreservingNumbers(input);
       } catch (error) {
-        expect(isMcpWardenError(error), `untyped throw for round ${String(round)}`).toBe(true);
+        expect(isMcpStewardError(error), `untyped throw for round ${String(round)}`).toBe(true);
       }
     }
   });
@@ -160,7 +160,7 @@ describe('the JSON parser', () => {
       try {
         parseJsonPreservingNumbers(mutated);
       } catch (error) {
-        expect(isMcpWardenError(error), `untyped throw for ${mutated.slice(0, 60)}`).toBe(true);
+        expect(isMcpStewardError(error), `untyped throw for ${mutated.slice(0, 60)}`).toBe(true);
       }
     }
   });
@@ -180,7 +180,7 @@ describe('the canonicalizer', () => {
       try {
         once = canonicalizeJsonText(text);
       } catch (error) {
-        expect(isMcpWardenError(error)).toBe(true);
+        expect(isMcpStewardError(error)).toBe(true);
         continue;
       }
 
@@ -194,7 +194,7 @@ describe('the canonicalizer', () => {
         canonicalizeJsonText(input);
       } catch (error) {
         expect(
-          isMcpWardenError(error),
+          isMcpStewardError(error),
           `untyped throw for ${JSON.stringify(input.slice(0, 40))}`,
         ).toBe(true);
       }
@@ -223,7 +223,7 @@ describe('the configuration parser', () => {
         parseConfigFile(input, 'fuzz.json');
       } catch (error) {
         expect(
-          isMcpWardenError(error),
+          isMcpStewardError(error),
           `untyped throw for ${JSON.stringify(input.slice(0, 40))}`,
         ).toBe(true);
       }
@@ -243,7 +243,7 @@ describe('the policy parser', () => {
         parsePolicy(input, 'fuzz.json');
       } catch (error) {
         expect(
-          isMcpWardenError(error),
+          isMcpStewardError(error),
           `untyped throw for ${JSON.stringify(input.slice(0, 40))}`,
         ).toBe(true);
       }
@@ -258,7 +258,7 @@ describe('the client config parser', () => {
         parseClientConfig(input, CLIENT, 'fuzz.json');
       } catch (error) {
         expect(
-          isMcpWardenError(error),
+          isMcpStewardError(error),
           `untyped throw for ${JSON.stringify(input.slice(0, 40))}`,
         ).toBe(true);
       }
@@ -284,7 +284,7 @@ describe('the client config parser', () => {
       try {
         parseClientConfig(shape, CLIENT, 'fuzz.json');
       } catch (error) {
-        expect(isMcpWardenError(error), `untyped throw for ${shape}`).toBe(true);
+        expect(isMcpStewardError(error), `untyped throw for ${shape}`).toBe(true);
       }
     }
   });

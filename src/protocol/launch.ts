@@ -151,7 +151,7 @@ export function escapeArgument(arg: string, doubleEscape: boolean): string {
  *
  * The current directory is deliberately not searched. Windows does search it
  * first, which is how a planted `npx.cmd` in a project directory gets run
- * instead of the real one, and mcpwarden is often run from inside a project it
+ * instead of the real one, and mcpsteward is often run from inside a project it
  * has no reason to trust.
  */
 export function resolveOnPath(

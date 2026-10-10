@@ -42,7 +42,7 @@ project directory. Those are found only when a directory is named explicitly.
 | Generic | `mcp.json`, `.mcp.json` in a named directory | A convention rather than anything specified. Shape assumed to match the common `mcpServers` form. |
 
 **How to help.** Configure one MCP server in a client you actually use and run
-`mcpwarden discover`, then confirm the server appears. `absentPaths` in the inventory
+`mcpsteward discover`, then confirm the server appears. `absentPaths` in the inventory
 lists every location checked, so a path that is wrong shows up there rather than being
 invisible. A corrected path is the single most useful pull request this project can
 receive.
@@ -101,7 +101,7 @@ malformed requests. That is precisely what a correct client library exists to pr
 
 ## 5. Repository and disclosure metadata
 
-`package.json` carries `github.com/ITheroSolutions/mcpwarden` for `repository`,
+`package.json` carries `github.com/ITheroSolutions/mcpsteward` for `repository`,
 `homepage` and `bugs`. The same URL appears as `informationUri` in the SARIF renderer
 and in the `CHANGELOG.md` compare link. All three move together if the repository is
 ever renamed.
@@ -123,18 +123,18 @@ dependency rather than merely listed, and exercised there.
 | Tests, fixtures or specifications inside | none |
 | Ledger, pin or captured surface files inside | none |
 | Runtime dependencies of the installed package | `{}` |
-| `import { ... } from '@itherosolutions/mcpwarden'` | resolves |
-| `import { inventory } from '@itherosolutions/mcpwarden/api'` | resolves |
+| `import { ... } from 'mcpsteward'` | resolves |
+| `import { inventory } from 'mcpsteward/api'` | resolves |
 | Type declarations | present for every entry point |
 | `dist/cli/index.js --version` | prints the version |
 | `dist/cli/index.js discover --format json` | valid JSON |
-| `dist/mcp/index.js` answering `server/discover` | correct result, identifies as `mcpwarden` |
+| `dist/mcp/index.js` answering `server/discover` | correct result, identifies as `mcpsteward` |
 
 CI runs the same inspection on every push, including a positive check that the required
 entry points are present. An earlier version of that check matched the bare word
 `ledger` and so flagged `dist/ledger/index.js`, which is compiled source rather than
 captured data. A check that cries wolf on every build is a check people learn to ignore,
-so the pattern now matches only captured state: `.mcpwarden-ledger`, `.pin.json` and
+so the pattern now matches only captured state: `.mcpsteward-ledger`, `.pin.json` and
 `.surface.json`.
 
 ---
@@ -142,10 +142,10 @@ so the pattern now matches only captured state: `.mcpwarden-ledger`, `.pin.json`
 ## 7. Servers that require sign in cannot be inspected
 
 A server that answers HTTP 401 or 403 is reported as requiring sign in, with its host,
-and is not retried. mcpwarden does not perform OAuth or any interactive sign in. See
+and is not retried. mcpsteward does not perform OAuth or any interactive sign in. See
 `DECISIONS.md` D-015 for why.
 
-This is not a corner case. On the first real machine mcpwarden was run against, roughly a
+This is not a corner case. On the first real machine mcpsteward was run against, roughly a
 third of the configured servers were hosted services that require OAuth, which is typical
 of any large vendor's hosted MCP endpoint.
 

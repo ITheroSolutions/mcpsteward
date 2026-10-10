@@ -26,7 +26,7 @@ export const MIGRATION_PATTERNS: readonly MigrationPattern[] = [
   {
     id: 'MIG-INITIALIZE',
     title: 'initialize handshake',
-    rule: 'MW-LIFE-005',
+    rule: 'MS-LIFE-005',
     severity: 'critical',
     why:
       'The initialize and notifications/initialized handshake was removed. A modern client never ' +
@@ -39,7 +39,7 @@ export const MIGRATION_PATTERNS: readonly MigrationPattern[] = [
   {
     id: 'MIG-SESSION',
     title: 'Mcp-Session-Id usage',
-    rule: 'MW-HTTP-012',
+    rule: 'MS-HTTP-012',
     severity: 'critical',
     why:
       'Protocol level sessions and the Mcp-Session-Id header were removed. A server that mints or ' +
@@ -52,7 +52,7 @@ export const MIGRATION_PATTERNS: readonly MigrationPattern[] = [
   {
     id: 'MIG-GET-STREAM',
     title: 'HTTP GET stream endpoint',
-    rule: 'MW-HTTP-011',
+    rule: 'MS-HTTP-011',
     severity: 'high',
     why:
       'The standalone GET SSE endpoint was removed. Long lived notifications now flow on the ' +
@@ -63,7 +63,7 @@ export const MIGRATION_PATTERNS: readonly MigrationPattern[] = [
   {
     id: 'MIG-RESUMABILITY',
     title: 'Last-Event-ID resumability',
-    rule: 'MW-HTTP-012',
+    rule: 'MS-HTTP-012',
     severity: 'medium',
     why:
       'SSE stream resumability and message redelivery were removed. A broken stream now loses the ' +
@@ -87,7 +87,7 @@ export const MIGRATION_PATTERNS: readonly MigrationPattern[] = [
   {
     id: 'MIG-PING',
     title: 'ping or logging/setLevel handler',
-    rule: 'MW-LIFE-007',
+    rule: 'MS-LIFE-007',
     severity: 'medium',
     why: 'Both methods were removed from the protocol in this revision.',
     fix:
@@ -98,7 +98,7 @@ export const MIGRATION_PATTERNS: readonly MigrationPattern[] = [
   {
     id: 'MIG-SERVER-REQUEST',
     title: 'server initiated request',
-    rule: 'MW-HTTP-008',
+    rule: 'MS-HTTP-008',
     severity: 'critical',
     why:
       'Servers may no longer send roots/list, sampling/createMessage or elicitation/create as their ' +
@@ -111,7 +111,7 @@ export const MIGRATION_PATTERNS: readonly MigrationPattern[] = [
   {
     id: 'MIG-CACHE-METADATA',
     title: 'list handler without cache metadata',
-    rule: 'MW-CACHE-001',
+    rule: 'MS-CACHE-001',
     severity: 'high',
     why:
       'Results from the list methods and resources/read must now carry ttlMs and cacheScope. A ' +
@@ -124,7 +124,7 @@ export const MIGRATION_PATTERNS: readonly MigrationPattern[] = [
   {
     id: 'MIG-RESULT-TYPE',
     title: 'result without resultType',
-    rule: 'MW-RES-001',
+    rule: 'MS-RES-001',
     severity: 'high',
     why: 'Every result must now declare resultType, and a client treats an unrecognised value as invalid.',
     fix: 'Add resultType: "complete" to ordinary results.',
@@ -133,7 +133,7 @@ export const MIGRATION_PATTERNS: readonly MigrationPattern[] = [
   {
     id: 'MIG-ERROR-CODE',
     title: 'retired error code',
-    rule: 'MW-ERR-002',
+    rule: 'MS-ERR-002',
     severity: 'medium',
     why:
       'Code -32002 for resource not found was replaced by -32602, and -32042 was retired entirely. ' +
@@ -146,7 +146,7 @@ export const MIGRATION_PATTERNS: readonly MigrationPattern[] = [
   {
     id: 'MIG-DEPRECATED-CAPABILITY',
     title: 'deprecated capability',
-    rule: 'MW-DEP-001',
+    rule: 'MS-DEP-001',
     severity: 'low',
     why:
       'Roots, Sampling and Logging are deprecated with a minimum twelve month window. They still ' +

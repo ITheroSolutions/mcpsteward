@@ -11,8 +11,8 @@ let root: string;
 let path: string;
 
 beforeEach(async () => {
-  root = await mkdtemp(join(tmpdir(), 'mcpwarden-ledger-'));
-  path = join(root, 'surfaces.mcpwarden-ledger');
+  root = await mkdtemp(join(tmpdir(), 'mcpsteward-ledger-'));
+  path = join(root, 'surfaces.mcpsteward-ledger');
 });
 
 afterEach(async () => {
@@ -96,7 +96,7 @@ describe('format', () => {
 
   it('rejects a file that is not a ledger', async () => {
     await writeFile(path, '{"something":"else"}\n', 'utf8');
-    await expect(new Ledger(path).readHeader()).rejects.toThrow(/not an mcpwarden ledger/);
+    await expect(new Ledger(path).readHeader()).rejects.toThrow(/not an mcpsteward ledger/);
   });
 
   it('rejects a future format version rather than guessing at it', async () => {

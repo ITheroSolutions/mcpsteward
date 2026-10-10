@@ -169,7 +169,7 @@ describe('a batch file that re-parses its arguments', () => {
   beforeEach(async () => {
     // A directory name containing a space, an ampersand and parentheses, so the
     // quoted command path is exercised along with the arguments.
-    dir = join(await mkdtemp(join(tmpdir(), 'mcpwarden-shim-')), 'dir with space & (parens)');
+    dir = join(await mkdtemp(join(tmpdir(), 'mcpsteward-shim-')), 'dir with space & (parens)');
     await cp(SHIM_DIR, dir, { recursive: true });
   });
 
@@ -266,13 +266,13 @@ describe('a batch file that re-parses its arguments', () => {
 
 describe('a command that does not exist', () => {
   it('fails immediately, naming the command, rather than timing out', async () => {
-    const transport = new StdioTransport({ command: 'mcpwarden-no-such-command-xyz', args: [] });
+    const transport = new StdioTransport({ command: 'mcpsteward-no-such-command-xyz', args: [] });
     transport.start();
 
     const started = Date.now();
     await expect(
       transport.request({ jsonrpc: '2.0', id: 1, method: 'tools/list' }, 20_000),
-    ).rejects.toThrow(/mcpwarden-no-such-command-xyz" was not found/);
+    ).rejects.toThrow(/mcpsteward-no-such-command-xyz" was not found/);
     expect(Date.now() - started).toBeLessThan(5_000);
 
     await transport.dispose();

@@ -194,7 +194,7 @@ describe('config precedence', () => {
   it('applies environment over file', () => {
     const config = resolveConfig({
       fileConfig: { timeoutMs: 1000 },
-      env: { MCPWARDEN_TIMEOUT_MS: '2000' },
+      env: { MCPSTEWARD_TIMEOUT_MS: '2000' },
     });
     expect(config.timeoutMs).toBe(2000);
   });
@@ -202,7 +202,7 @@ describe('config precedence', () => {
   it('applies per call overrides over environment', () => {
     const config = resolveConfig({
       fileConfig: { timeoutMs: 1000 },
-      env: { MCPWARDEN_TIMEOUT_MS: '2000' },
+      env: { MCPSTEWARD_TIMEOUT_MS: '2000' },
       overrides: { timeoutMs: 3000 },
     });
     expect(config.timeoutMs).toBe(3000);
@@ -225,11 +225,11 @@ describe('config precedence', () => {
 describe('config from environment', () => {
   it('reads numbers, strings and booleans', () => {
     const overrides = configFromEnv({
-      MCPWARDEN_TIMEOUT_MS: '1234',
-      MCPWARDEN_RETRIES: '5',
-      MCPWARDEN_LOG_LEVEL: 'debug',
-      MCPWARDEN_ALLOW_DOWNGRADE: 'false',
-      MCPWARDEN_LEDGER_PATH: '/var/lib/mcpwarden.log',
+      MCPSTEWARD_TIMEOUT_MS: '1234',
+      MCPSTEWARD_RETRIES: '5',
+      MCPSTEWARD_LOG_LEVEL: 'debug',
+      MCPSTEWARD_ALLOW_DOWNGRADE: 'false',
+      MCPSTEWARD_LEDGER_PATH: '/var/lib/mcpsteward.log',
     });
 
     expect(overrides).toEqual({
@@ -237,38 +237,38 @@ describe('config from environment', () => {
       retries: 5,
       logLevel: 'debug',
       allowDowngrade: false,
-      ledgerPath: '/var/lib/mcpwarden.log',
+      ledgerPath: '/var/lib/mcpsteward.log',
     });
   });
 
   it('accepts several boolean spellings', () => {
     for (const truthy of ['true', '1', 'yes', 'TRUE']) {
-      expect(configFromEnv({ MCPWARDEN_ALLOW_DOWNGRADE: truthy }).allowDowngrade).toBe(true);
+      expect(configFromEnv({ MCPSTEWARD_ALLOW_DOWNGRADE: truthy }).allowDowngrade).toBe(true);
     }
     for (const falsy of ['false', '0', 'no', 'FALSE']) {
-      expect(configFromEnv({ MCPWARDEN_ALLOW_DOWNGRADE: falsy }).allowDowngrade).toBe(false);
+      expect(configFromEnv({ MCPSTEWARD_ALLOW_DOWNGRADE: falsy }).allowDowngrade).toBe(false);
     }
   });
 
   it('ignores empty and absent variables', () => {
-    expect(configFromEnv({ MCPWARDEN_TIMEOUT_MS: '' })).toEqual({});
+    expect(configFromEnv({ MCPSTEWARD_TIMEOUT_MS: '' })).toEqual({});
     expect(configFromEnv({})).toEqual({});
   });
 
-  it('ignores unrecognised MCPWARDEN variables rather than failing the run', () => {
+  it('ignores unrecognised MCPSTEWARD variables rather than failing the run', () => {
     // A stale exported variable from months ago should not break a run.
-    expect(configFromEnv({ MCPWARDEN_SOMETHING_OLD: 'x' })).toEqual({});
+    expect(configFromEnv({ MCPSTEWARD_SOMETHING_OLD: 'x' })).toEqual({});
   });
 
   it('names the variable when a number is unparseable', () => {
-    expect(() => configFromEnv({ MCPWARDEN_TIMEOUT_MS: 'soon' })).toThrow(
-      /MCPWARDEN_TIMEOUT_MS must be a number/,
+    expect(() => configFromEnv({ MCPSTEWARD_TIMEOUT_MS: 'soon' })).toThrow(
+      /MCPSTEWARD_TIMEOUT_MS must be a number/,
     );
   });
 
   it('names the variable when a boolean is unparseable', () => {
-    expect(() => configFromEnv({ MCPWARDEN_ALLOW_DOWNGRADE: 'maybe' })).toThrow(
-      /MCPWARDEN_ALLOW_DOWNGRADE must be a boolean/,
+    expect(() => configFromEnv({ MCPSTEWARD_ALLOW_DOWNGRADE: 'maybe' })).toThrow(
+      /MCPSTEWARD_ALLOW_DOWNGRADE must be a boolean/,
     );
   });
 });
@@ -316,8 +316,8 @@ describe('parseConfigFile', () => {
   });
 
   it('rejects invalid JSON, naming the path', () => {
-    expect(() => parseConfigFile('{oops}', '/etc/mcpwarden.json')).toThrow(
-      /\/etc\/mcpwarden\.json is not valid JSON/,
+    expect(() => parseConfigFile('{oops}', '/etc/mcpsteward.json')).toThrow(
+      /\/etc\/mcpsteward\.json is not valid JSON/,
     );
   });
 

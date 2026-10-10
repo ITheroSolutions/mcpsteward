@@ -23,7 +23,7 @@ import {
 let root: string;
 
 beforeEach(async () => {
-  root = await mkdtemp(join(tmpdir(), 'mcpwarden-policy-'));
+  root = await mkdtemp(join(tmpdir(), 'mcpsteward-policy-'));
 });
 
 afterEach(async () => {
@@ -253,7 +253,7 @@ describe('violation detail tells a developer what to do', () => {
       { inventory: inventory([server('weak')]), grades: { 'id-weak': grade('C', 1) } },
     );
 
-    expect(result.violations[0]?.detail).toContain('mcpwarden conform');
+    expect(result.violations[0]?.detail).toContain('mcpsteward conform');
   });
 
   it('names the command to re-pin after expected drift', () => {
@@ -262,7 +262,7 @@ describe('violation detail tells a developer what to do', () => {
       { inventory: inventory([server('drifty')]), drift: { 'id-drifty': driftAt('high') } },
     );
 
-    expect(result.violations[0]?.detail).toContain('mcpwarden trust');
+    expect(result.violations[0]?.detail).toContain('mcpsteward trust');
   });
 
   it('states both what is required and what was found', () => {

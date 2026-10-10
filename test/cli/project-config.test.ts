@@ -19,7 +19,7 @@ import { run, type CliIo } from '../../src/cli/index.js';
 let project: string;
 
 beforeEach(async () => {
-  project = await mkdtemp(join(tmpdir(), 'mcpwarden-project-'));
+  project = await mkdtemp(join(tmpdir(), 'mcpsteward-project-'));
 });
 
 afterEach(async () => {
@@ -84,7 +84,7 @@ describe('project level configuration', () => {
   });
 
   it('makes verify fail in CI, where the project is all there is', async () => {
-    const policy = join(project, 'mcpwarden.policy.json');
+    const policy = join(project, 'mcpsteward.policy.json');
     await writeFile(policy, JSON.stringify({ version: 1, failOnInlineCredentials: true }));
 
     const { code, stdout } = await cli(['verify', '--policy', policy, '--format', 'json']);

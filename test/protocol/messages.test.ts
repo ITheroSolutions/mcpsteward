@@ -14,7 +14,7 @@ import {
 
 describe('request _meta', () => {
   it('carries the two required fields by default', () => {
-    // MW-META-001: protocolVersion and clientCapabilities are required on every
+    // MS-META-001: protocolVersion and clientCapabilities are required on every
     // request. A server must reject a request missing either with -32602.
     const meta = buildRequestMeta({ revision: '2026-07-28' });
 
@@ -123,7 +123,7 @@ describe('stdio framing', () => {
   });
 
   it('escapes newlines inside string values rather than emitting them raw', () => {
-    // MW-STDIO-001: messages MUST NOT contain embedded newlines. A tool
+    // MS-STDIO-001: messages MUST NOT contain embedded newlines. A tool
     // description with a line break is completely ordinary, so this is the
     // common case rather than an edge case.
     const line = serializeForStdio({ description: 'first line\nsecond line' });
@@ -145,7 +145,7 @@ describe('stdio framing', () => {
 
 describe('HTTP headers', () => {
   it('sends the protocol version header matching the body', () => {
-    // MW-HTTP-002: the header value MUST match the body _meta value, and a
+    // MS-HTTP-002: the header value MUST match the body _meta value, and a
     // server MUST reject a mismatch with 400 and -32020.
     const headers = buildHttpHeaders({ revision: '2026-07-28', method: 'tools/list' });
     expect(headers['MCP-Protocol-Version']).toBe('2026-07-28');
@@ -200,7 +200,7 @@ describe('HTTP headers', () => {
     });
 
     it('can send a name header that disagrees with the body', () => {
-      // This is the only way to test MW-HTTP-004, which requires the server to
+      // This is the only way to test MS-HTTP-004, which requires the server to
       // reject a header and body mismatch with -32020.
       const headers = buildHttpHeaders({
         revision: '2026-07-28',

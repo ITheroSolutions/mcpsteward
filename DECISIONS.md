@@ -26,7 +26,7 @@ trivially predictable and makes stack traces in bug reports point at real file p
 
 ## D-002: The MCP SDK is a devDependency only, and the protocol client is written by hand
 
-**Decision:** `@modelcontextprotocol/sdk` is a devDependency. mcpwarden implements its
+**Decision:** `@modelcontextprotocol/sdk` is a devDependency. mcpsteward implements its
 own 2026-07-28 protocol client. Runtime dependencies stay at zero.
 
 **Reasoning.** This reverses the obvious starting assumption that the SDK would be the
@@ -35,13 +35,13 @@ protocol foundation, on evidence gathered rather than preference. Two findings d
 First, the published SDK does not implement this revision. Version 1.30.0, the latest on
 npm, was published 2026-07-27, one day before the specification was finalised. Its type
 definitions reference `2025-06-18` and `2025-11-25` and contain no occurrence of
-`2026-07-28`. It therefore cannot speak the revision mcpwarden exists to grade, and it
+`2026-07-28`. It therefore cannot speak the revision mcpsteward exists to grade, and it
 cannot host a fixture server for that revision either. Building on it would have meant
 waiting on someone else's release to do the core job.
 
 Second, and more durable, a conformance prober needs to send deliberately malformed
-traffic. Rules such as MW-META-001 (server must reject a request missing required `_meta`
-fields with `-32602`) and MW-HTTP-004 (server must reject a header and body mismatch with
+traffic. Rules such as MS-META-001 (server must reject a request missing required `_meta`
+fields with `-32602`) and MS-HTTP-004 (server must reject a header and body mismatch with
 `-32020`) can only be tested by sending exactly the request a correct SDK is designed to
 make impossible. A well behaved client library is the wrong instrument for this job
 regardless of which revision it supports.
@@ -64,7 +64,7 @@ against. Testing backward compatibility against a real implementation of the old
 worth more than testing it against a fixture we wrote ourselves to match our own
 assumptions.
 
-**Consequence.** mcpwarden ships with zero runtime dependencies. A JSON Schema validator
+**Consequence.** mcpsteward ships with zero runtime dependencies. A JSON Schema validator
 was the one dependency ever anticipated, and it turned out not to be needed either. The
 README states this plainly.
 
@@ -81,7 +81,7 @@ old revision would mean maintaining a second full rule set for a specification t
 being migrated away from, which spends the effort in the wrong place during exactly the
 window when migration help is most valuable.
 
-Capture support for the legacy era is still required, because a user pointing mcpwarden
+Capture support for the legacy era is still required, because a user pointing mcpsteward
 at their machine will have servers on both eras and an inventory that silently omitted
 the old ones would be misleading. Drift detection also has to work on legacy servers,
 since a tool description changing under the old revision is the same security problem.
@@ -93,7 +93,7 @@ if demand for grading the old revision appears.
 lie by omission.
 
 **Consequence.** Every capture records which revision was actually used. A downgraded
-capture is never presented as a current one, per MW-LIFE-005.
+capture is never presented as a current one, per MS-LIFE-005.
 
 It is never graded either. `conform` against a server on `2025-11-25` reports it as not
 graded, with the revision it speaks, and exits 1. An earlier version applied the rule set
@@ -106,7 +106,7 @@ inspected.
 
 ## D-004: Rule identifiers are stable strings, never renumbered
 
-**Decision:** Conformance rules use ids of the form `MW-<AREA>-<NNN>`, assigned once and
+**Decision:** Conformance rules use ids of the form `MS-<AREA>-<NNN>`, assigned once and
 never reused or renumbered, even if a rule is withdrawn.
 
 **Reasoning.** The grade must be reproducible and rule ids will end up in users' policy
@@ -230,7 +230,7 @@ every digit intact. Negative zero becomes `0`, matching RFC 8785, because JSON o
 no distinction between the two that a consumer could act on and treating them as
 different would move the hash on a round trip through almost any JSON library.
 
-**Rejected:** strict RFC 8785 compliance. It would make mcpwarden's hashes match other
+**Rejected:** strict RFC 8785 compliance. It would make mcpsteward's hashes match other
 JCS implementations, which is worth something, but only by accepting silent blindness
 to a class of change this package exists to detect. Correctness wins over
 interoperability here, and the deviation is documented rather than hidden so an
@@ -241,7 +241,7 @@ independent verifier can reproduce it.
 serialise numbers differently between releases.
 
 **Consequence.** `docs/formats.md` must specify the number rule precisely enough for
-an independent verifier, since this is where mcpwarden departs from a published
+an independent verifier, since this is where mcpsteward departs from a published
 standard.
 
 ---
@@ -324,7 +324,7 @@ that server is the entire point of the tool.
 
 The probe result is genuinely ambiguous and the specification says so: a legacy
 server and a modern server missing the method both answer `-32601`, and
-MW-STDIO-008 is explicit that fallback MUST NOT be keyed to a specific code.
+MS-STDIO-008 is explicit that fallback MUST NOT be keyed to a specific code.
 Attempting the handshake resolves the ambiguity with evidence instead of a guess.
 
 **Rejected:** assuming legacy on any non modern error. Breaks inspection of non
@@ -388,9 +388,9 @@ set plus a few of the same kind. Nothing else from the operator's environment re
 it.
 
 **Reasoning.** Discovery originally recorded only the names of configured variables and,
-at connect time, looked those names up in mcpwarden's own environment. So a server
+at connect time, looked those names up in mcpsteward's own environment. So a server
 configured with `DATA_DIR=C:\data` started without it and exited, and a server with no
-`PATH` could not start its own subprocesses. mcpwarden could not inspect servers its
+`PATH` could not start its own subprocesses. mcpsteward could not inspect servers its
 operator's clients run without trouble.
 
 Handing a server its own configuration is not a disclosure. It is the intended recipient,
@@ -406,7 +406,7 @@ A placeholder only the owning client can fill, such as VS Code's `${input:...}`,
 out. In an argument it stops the launch with a message naming it, because starting the
 server with the literal text would only produce a confusing failure inside it.
 
-**Rejected:** keeping the names only behaviour. It made mcpwarden unable to inspect
+**Rejected:** keeping the names only behaviour. It made mcpsteward unable to inspect
 exactly the servers most worth inspecting, and the credential it protected was going to
 the server anyway.
 
@@ -421,7 +421,7 @@ explicitly; it never reads the host environment on the caller's behalf.
 ## D-015: Sign in required is its own outcome, and sign in is not attempted
 
 **Decision:** An HTTP 401 or 403 raises `AuthenticationRequiredError`, before the body is
-interpreted, and is not retried. mcpwarden does not perform OAuth or any interactive sign
+interpreted, and is not retried. mcpsteward does not perform OAuth or any interactive sign
 in.
 
 **Reasoning.** Most hosted MCP servers refuse unauthenticated requests, each with a body
@@ -430,7 +430,7 @@ in its own format. Parsed as protocol messages, those bodies produced reports li
 not exist. The status is the one signal every server agrees on.
 
 Performing OAuth would mean contacting authorization servers other than the server being
-inspected, which breaks the promise that mcpwarden only connects to what it is asked to
+inspected, which breaks the promise that mcpsteward only connects to what it is asked to
 inspect, and storing tokens, which is a credential store this package would then have to
 defend. Both deserve a design of their own rather than being added to a transport.
 
@@ -481,23 +481,29 @@ the server again records them.
 
 ---
 
-## D-017: Published as @itherosolutions/mcpwarden
+## D-017: The project is named mcpsteward
 
-**Decision:** The npm package is `@itherosolutions/mcpwarden`. The product, the
-repository and the installed command are all still `mcpwarden`.
+**Decision:** The project, the npm package, the repository and the installed command
+are all `mcpsteward`. Rule identifiers carry the prefix `MS-`.
 
-**Reasoning.** npm refused the unscoped name at publish time as too similar to an
-existing, unrelated package named `mcp-warden`. npm treats names that differ only by
-punctuation as the same name, and applies that check only on upload, so the name had
-looked available throughout. A scope is npm's own suggested remedy and is the only way
-to keep the name.
+**Reasoning.** The project was built under a different name. npm refused that name at
+publish time as too similar to an existing, unrelated package: npm treats names that
+differ only by punctuation as the same name, and applies that check only on upload, so
+the name had looked available throughout.
 
-**Rejected:** renaming the product to get an unscoped package. The name is already on
-the repository, the command, the ledger file format's magic string and the SARIF tool
-name, and a new unscoped name could be refused by the same rule.
+Two remedies were available. Publishing under a scope would have kept the old name, at
+the cost of an install line and import paths that differ from the name of the command.
+A new name keeps everything aligned: one word for the package, the command, the
+repository and the configuration files. Nothing had been published and no user had
+data in the old format, so the rename cost nothing that a later one would not cost more.
 
-**Consequence.** Install with `npm install -g @itherosolutions/mcpwarden`; import from
-`@itherosolutions/mcpwarden` and `@itherosolutions/mcpwarden/api`. `npx
-@itherosolutions/mcpwarden` runs the `mcpwarden` command, because npx picks the bin
-matching the package name without its scope. The README says the package is unrelated to
-`mcp-warden`.
+The new name was checked before use against the npm registry including every hyphen,
+underscore and dot variant, against GitHub repositories, against PyPI, and against the
+com, dev and io domains. It was unused in all of them.
+
+**Rejected:** a scoped package under the old name, for the reason above.
+
+**Consequence.** The ledger header's magic string and therefore the genesis hash carry
+the new name. `docs/formats.md` states both, and a test pins them to the code. Rule
+identifiers were renamed from their original prefix before first publication, which is
+the only point at which D-004's rule that identifiers are never renumbered allows it.

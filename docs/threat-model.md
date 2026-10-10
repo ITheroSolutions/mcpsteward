@@ -1,11 +1,11 @@
 # Threat model
 
-What mcpwarden defends against, what it does not, and where its heuristics are weak.
+What mcpsteward defends against, what it does not, and where its heuristics are weak.
 
 This document is deliberately unflattering. A trust tool that oversells itself is worse
 than no trust tool, because it converts a vague unease into a false sense of coverage,
 and a person who believes they are covered stops looking. If you are deciding whether to
-rely on mcpwarden as a control, read the "What this does not defend against" section
+rely on mcpsteward as a control, read the "What this does not defend against" section
 first and the rest afterwards.
 
 `SECURITY.md` states what is in scope for a vulnerability report. This document states
@@ -33,7 +33,7 @@ into evidence.
 drift comparison is made against. An attacker who can edit a pin can make any current
 surface compare as unchanged, which produces silence exactly where an alarm belongs.
 
-**The user's credentials.** mcpwarden reads client configuration files that routinely
+**The user's credentials.** mcpsteward reads client configuration files that routinely
 contain live API keys, and it spawns servers with environment variables that contain
 more. Every one of those values has to survive contact with a report, a log line, an
 error message and an append-only ledger without appearing in any of them. This is the
@@ -65,19 +65,19 @@ install changes, so nothing looks different in any client UI.
 ### C. A local attacker with filesystem access
 
 Has read and write access to the user's home directory, which means the ledger, the
-pins, the policy file, the client configs and mcpwarden's own installed code. Wants the
+pins, the policy file, the client configs and mcpsteward's own installed code. Wants the
 record to say something other than what happened.
 
 ### D. A supply chain attacker
 
 Compromises a package the target depends on. Two variants matter. The server's own
 dependency chain, which lets them change what a server does without touching its
-configuration. And mcpwarden's own chain, which lets them change what the inspector
+configuration. And mcpsteward's own chain, which lets them change what the inspector
 reports.
 
 ---
 
-## 3. What mcpwarden genuinely defends against
+## 3. What mcpsteward genuinely defends against
 
 Each item names the mechanism, so you can check it in the code rather than take it on
 faith.
@@ -186,7 +186,7 @@ score, and are listed in `VERIFY.md`.
 
 ---
 
-## 4. What mcpwarden does not defend against
+## 4. What mcpsteward does not defend against
 
 This is the section that matters. Read all of it.
 
@@ -198,7 +198,7 @@ The ledger chain proves internal consistency. It does not prove authenticity. No
 it is externally anchored, notarised, signed by a key the attacker cannot reach, or
 witnessed by any party other than the machine that wrote it.
 
-An attacker with write access to the ledger file, and with the ability to run mcpwarden
+An attacker with write access to the ledger file, and with the ability to run mcpsteward
 or reimplement its documented format, can delete the file and rebuild a complete chain
 from sequence zero. Every entry will hash correctly. Every `previousHash` will match.
 `ledger verify` will report the chain as valid, because by its own definition it is
@@ -217,7 +217,7 @@ unchanged and drift detection reports silence.
 The same attacker controls the local clock, so timestamps in the ledger are worth
 exactly as much as the attacker's cooperation.
 
-The same attacker can modify mcpwarden's own installed code, at which point every
+The same attacker can modify mcpsteward's own installed code, at which point every
 guarantee in section 3 is void.
 
 This is not solvable within the project's constraints. A signing key stored next to the
@@ -248,33 +248,33 @@ weights summed to a number in a particular band.
 `SECURITY.md` puts "the risk scoring heuristic being wrong about a given tool" out of
 scope for vulnerability reports, and this is why.
 
-### 4.3 A server that behaves differently for mcpwarden than for a real client
+### 4.3 A server that behaves differently for mcpsteward than for a real client
 
 **There is no attestation anywhere in this design.**
 
-Nothing binds the surface mcpwarden observed to the surface your agent will actually be
+Nothing binds the surface mcpsteward observed to the surface your agent will actually be
 given. A server can trivially distinguish a probe from ordinary use: by process
-environment, by timing, by the exact sequence of calls mcpwarden makes, by whether
+environment, by timing, by the exact sequence of calls mcpsteward makes, by whether
 `server/discover` was called at all, by how quickly the connection is torn down, or
 simply by serving benign definitions on the first N connections and poisoned ones
 afterwards.
 
 A server that wants to pass inspection and misbehave in production will do so, and
-mcpwarden will faithfully record the clean surface it was shown. The ledger entry will
+mcpsteward will faithfully record the clean surface it was shown. The ledger entry will
 be an accurate record of a lie.
 
-There is no cryptographic identity for MCP servers to attest to, and mcpwarden cannot
+There is no cryptographic identity for MCP servers to attest to, and mcpsteward cannot
 invent one unilaterally. This gap closes only if the protocol grows server attestation.
 
 ### 4.4 Anything about what a tool does when it is called
 
 **Only the advertised surface is captured. Nothing about behaviour is.**
 
-mcpwarden does not intercept tool calls, does not see arguments, does not see results,
+mcpsteward does not intercept tool calls, does not see arguments, does not see results,
 does not proxy traffic, and keeps no call log. A tool named `get_weather`, described as
 returning the weather, with an input schema of `{ city: string }`, can read your SSH
 keys and post them to a remote every time it is called. Its descriptor hash will be
-stable forever and mcpwarden will report no drift, correctly, because the advertised
+stable forever and mcpsteward will report no drift, correctly, because the advertised
 surface genuinely did not change.
 
 This is worth stating bluntly because the product's framing invites the opposite
@@ -283,24 +283,24 @@ and the tool list are byte for byte identical to what you approved. It does not 
 server is behaving, has not been compromised, or is doing what it says.
 
 If you need behavioural control, you need a runtime interception layer between the model
-and the server. mcpwarden is not one and does not aspire to be one.
+and the server. mcpsteward is not one and does not aspire to be one.
 
 ### 4.5 A pin approving a surface nobody read
 
 **The most likely real world failure of this tool is social, not technical.**
 
-`mcpwarden trust` pins whatever the server currently advertises. It records
+`mcpsteward trust` pins whatever the server currently advertises. It records
 `approvedBy` as free text, self reported, never verified against anything. It does not
 require you to read anything, does not show a diff on first pin because there is nothing
 to diff against, and does not measure whether you understood what you approved.
 
 The realistic sequence is that a user installs a server with forty tools, runs
-`mcpwarden trust`, and thereby converts an unexamined surface into an approved baseline.
+`mcpsteward trust`, and thereby converts an unexamined surface into an approved baseline.
 From that moment the tool reports "matches your pin" indefinitely, and that message is
 read as "this is fine". A poisoned description present at pin time is silently blessed
 forever.
 
-mcpwarden detects *change from a baseline*. It has no opinion whatsoever about whether
+mcpsteward detects *change from a baseline*. It has no opinion whatsoever about whether
 the baseline was any good.
 
 ### 4.6 Time of check versus time of use
@@ -324,7 +324,7 @@ clients. It therefore misses, by construction:
 - servers a process spawns dynamically without any persistent registration
 
 For a feature whose pitch is "the shadow MCP inventory", this is a real limitation and
-it should be read as such. The count mcpwarden reports is a lower bound on the servers
+it should be read as such. The count mcpsteward reports is a lower bound on the servers
 configured on the machine. Treating it as a complete asset inventory is a mistake.
 Paths that could not be confirmed against a vendor source are recorded in `VERIFY.md`
 rather than presented as established.
@@ -338,7 +338,7 @@ arguments. That has consequences that cut against the tool's purpose:
   code tomorrow. The `ServerRef` will not move. Only the captured surface will, and only
   if the change is visible in the advertised surface at all.
 - A wrapper script keeps its identity while changing everything it launches.
-- mcpwarden does not hash the server's binary, its lockfile, its package integrity, or
+- mcpsteward does not hash the server's binary, its lockfile, its package integrity, or
   anything else about the code that runs. It hashes what the running code says about
   itself.
 
@@ -359,7 +359,7 @@ Inspecting a stdio MCP server means running it. If you would not run a server, d
 capture it, and be aware that a `capture --all` across a discovered inventory runs every
 one of them.
 
-### 4.10 mcpwarden's own supply chain
+### 4.10 mcpsteward's own supply chain
 
 The package currently has zero runtime dependencies, with one JSON Schema validator
 anticipated for schema conformance work. That is a genuinely small attack surface and it
@@ -368,7 +368,7 @@ package, the registry account, or the JSON Schema validator can make the inspect
 and the inspector lying is a strictly better position for an attacker than any individual
 server lying.
 
-Nothing in mcpwarden verifies mcpwarden.
+Nothing in mcpsteward verifies mcpsteward.
 
 ### 4.11 The conformance grade is not a security signal
 
@@ -390,10 +390,10 @@ for vulnerability reports for this reason.
 
 ### 4.13 Hashes are not portable to other JCS implementations
 
-Because of the number deviation in section 3, mcpwarden's canonical form is not RFC 8785
+Because of the number deviation in section 3, mcpsteward's canonical form is not RFC 8785
 output. An independent verifier must implement the documented number rule, not reach for
 an off the shelf JCS library. If someone writes a verifier against stock JCS, it will
-disagree with mcpwarden on any surface containing a number that a double cannot represent
+disagree with mcpsteward on any surface containing a number that a double cannot represent
 exactly, and the disagreement will look like tampering. `docs/formats.md` exists to
 prevent that, and it is load bearing.
 
@@ -420,7 +420,7 @@ practice the case is covered by a different mechanism: `collectEnvSecrets` takes
 values of environment variables whose names look secret and removes those exact values
 everywhere they appear, regardless of shape. That works when the credential arrived
 through an environment variable, which is the common case. It does not work when the
-credential is a bare literal that mcpwarden has never seen in a named position.
+credential is a bare literal that mcpsteward has never seen in a named position.
 
 This is the one place where the "when in doubt, redact" default is deliberately not
 applied. It is recorded as a decision rather than left as an apparent gap.
@@ -492,13 +492,13 @@ look, not a finding.
 Because descriptors are sorted by identity before hashing, a change consisting only of
 reordering does not register. That is required, since deterministic `tools/list` ordering
 is only a SHOULD in the specification and treating reordering as drift would fire on
-conforming servers constantly. It is still, technically, a change mcpwarden cannot see.
+conforming servers constantly. It is still, technically, a change mcpsteward cannot see.
 
 ---
 
 ## 6. Residual risk, and what to do in addition
 
-If you run mcpwarden and nothing else, you have a local, unauthenticated,
+If you run mcpsteward and nothing else, you have a local, unauthenticated,
 self-witnessed record of what a set of servers claimed about themselves at various
 points in time, plus a specification compliance grade. That is genuinely useful and it
 is considerably less than "MCP security".
@@ -510,7 +510,7 @@ it directly addresses 4.1. Copy the current merkle root and the head entry hash 
 something the local attacker cannot rewrite: a git repository with signed commits pushed
 to a remote, a WORM bucket, an internal log pipeline, or a chat channel with retention.
 An attacker who rebuilds the local chain then produces a chain that disagrees with the
-copies, and the disagreement is the detection. mcpwarden cannot enforce this. Nothing in
+copies, and the disagreement is the detection. mcpsteward cannot enforce this. Nothing in
 the local design substitutes for it.
 
 **Store the ledger and pins with restrictive permissions**, and treat write access to
@@ -522,21 +522,21 @@ with filesystem, network, shell or credential reach. If you are pinning forty to
 without reading them, you are recording a baseline rather than approving one, and you
 should not later read "no drift" as reassurance.
 
-**Pin exact versions rather than `@latest`.** mcpwarden hashes what a server says, not
+**Pin exact versions rather than `@latest`.** mcpsteward hashes what a server says, not
 the code that says it. Version pinning and a lockfile are how you constrain the code.
 Combining both gives you something neither provides alone.
 
 **Move inline credentials into environment references and rotate anything found
-inline.** A credential in a config file that mcpwarden found is a credential that may
+inline.** A credential in a config file that mcpsteward found is a credential that may
 already be in a git history or a synced folder. Rotate it rather than only relocating it.
 
 **Run servers with the least environment and least filesystem access they can work
-with.** mcpwarden's environment allowlist limits what it passes; it has no control over
+with.** mcpsteward's environment allowlist limits what it passes; it has no control over
 what the client that actually uses the server passes, and the client is usually far more
 generous.
 
 **Use a runtime interception or policy layer if you need behavioural control.** Section
-4.4 is not a gap mcpwarden will ever close. Something has to sit between the model and
+4.4 is not a gap mcpsteward will ever close. Something has to sit between the model and
 the server and inspect calls.
 
 **Treat the conformance grade as an interoperability measurement.** Do not let a letter

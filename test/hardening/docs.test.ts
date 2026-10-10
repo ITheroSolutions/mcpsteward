@@ -191,7 +191,7 @@ describe('docs/rules.md is generated, not hand written', () => {
   it('carries a citation for every rule it lists', async () => {
     const document = await readFile(RULES, 'utf8');
 
-    const ruleHeadings = [...document.matchAll(/^#### (MW-[A-Z]+-\d{3}):/gm)];
+    const ruleHeadings = [...document.matchAll(/^#### (MS-[A-Z]+-\d{3}):/gm)];
     const specRows = [...document.matchAll(/^\| Specification \|/gm)];
 
     expect(ruleHeadings.length).toBeGreaterThan(0);

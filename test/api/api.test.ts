@@ -26,7 +26,7 @@ const FIXTURE = fileURLToPath(new URL('../fixtures/servers/conforming.mjs', impo
 let root: string;
 
 beforeEach(async () => {
-  root = await mkdtemp(join(tmpdir(), 'mcpwarden-api-'));
+  root = await mkdtemp(join(tmpdir(), 'mcpsteward-api-'));
 });
 
 afterEach(async () => {
@@ -41,7 +41,7 @@ function fixtureServer(mode = 'conforming'): ServerRef {
       transport: 'stdio',
       command: process.execPath,
       args: [FIXTURE],
-      envNames: ['MCPWARDEN_FIXTURE_MODE'],
+      envNames: ['MCPSTEWARD_FIXTURE_MODE'],
     },
     authPosture: 'none',
     registrations: [],
@@ -49,7 +49,7 @@ function fixtureServer(mode = 'conforming'): ServerRef {
 }
 
 function envFor(mode: string): Record<string, string> {
-  return { MCPWARDEN_FIXTURE_MODE: mode };
+  return { MCPSTEWARD_FIXTURE_MODE: mode };
 }
 
 describe('one call operations', () => {

@@ -56,7 +56,7 @@ export function jsonNumber(token: string): JsonNumber {
  *
  * A hostile server can send `[[[[[...]]]]]` and blow the stack. The specification
  * itself asks implementations to bound schema depth as a denial of service
- * defence (MW-TOOL-005); the same reasoning applies to the parser underneath.
+ * defence (MS-TOOL-005); the same reasoning applies to the parser underneath.
  */
 const MAX_DEPTH = 512;
 

@@ -6,7 +6,7 @@
  *
  * The report goes to stdout. Everything else, including every diagnostic, every
  * warning and every error, goes to stderr. That separation is what makes
- * `mcpwarden conform x --format json | jq` work: a log line on stdout would
+ * `mcpsteward conform x --format json | jq` work: a log line on stdout would
  * corrupt the document a caller is parsing.
  *
  * ## Exit codes are a contract
@@ -21,9 +21,9 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { homedir, platform } from 'node:os';
 import { join } from 'node:path';
 
-import { parseConfigFile, resolveConfig, type McpWardenConfig } from '../core/config.js';
+import { parseConfigFile, resolveConfig, type McpStewardConfig } from '../core/config.js';
 import { isEntryPoint } from '../core/entry.js';
-import { isMcpWardenError, toMcpWardenError } from '../core/errors.js';
+import { isMcpStewardError, toMcpStewardError } from '../core/errors.js';
 import { createLogger, type Logger } from '../core/logger.js';
 import { collectEnvSecrets, type RedactionOptions } from '../core/redaction.js';
 import { SUPPORTED_REVISIONS, TARGET_REVISION } from '../core/revisions.js';
@@ -104,15 +104,15 @@ export async function run(argv: readonly string[], io: CliIo): Promise<number> {
   try {
     return await dispatch(command, subcommand, targets, effective, io, logger);
   } catch (error) {
-    const wrapped = toMcpWardenError(error, `running ${command}`);
+    const wrapped = toMcpStewardError(error, `running ${command}`);
 
     io.stderr(`${wrapped.message}\n`);
 
     // A usage mistake and a defect must not look the same to a CI job.
     if (wrapped.code === 'CONFIGURATION_INVALID') return EXIT_CODES.usageError;
-    if (isMcpWardenError(error)) return EXIT_CODES.policyFailure;
+    if (isMcpStewardError(error)) return EXIT_CODES.policyFailure;
 
-    io.stderr('This is a defect in mcpwarden. Please report it with the command you ran.\n');
+    io.stderr('This is a defect in mcpsteward. Please report it with the command you ran.\n');
     return EXIT_CODES.internalError;
   }
 }
@@ -137,7 +137,7 @@ async function dispatch(
     case 'migrate': {
       const target = targets[0];
       if (target === undefined) {
-        io.stderr('migrate needs a path. Example: mcpwarden migrate ./src\n');
+        io.stderr('migrate needs a path. Example: mcpsteward migrate ./src\n');
         return EXIT_CODES.usageError;
       }
       if (targets.includes('--fix') || flags.fix) {
@@ -174,7 +174,7 @@ async function dispatch(
       return await policyCommand(subcommand, flags, config, io, logger);
 
     default:
-      io.stderr(`Unknown command ${JSON.stringify(command)}. Run mcpwarden --help.\n`);
+      io.stderr(`Unknown command ${JSON.stringify(command)}. Run mcpsteward --help.\n`);
       return EXIT_CODES.usageError;
   }
 }
@@ -390,7 +390,7 @@ async function migrateFix(target: string, flags: GlobalFlags, io: CliIo): Promis
   if (remaining.length > 0) {
     io.stderr(
       `\n${String(remaining.length)} other finding(s) are not safely mechanisable. ` +
-        `Run mcpwarden migrate ${target} to see them with their fixes.\n`,
+        `Run mcpsteward migrate ${target} to see them with their fixes.\n`,
     );
   }
 
@@ -401,13 +401,13 @@ async function serverCommand(
   command: string,
   targets: readonly string[],
   flags: GlobalFlags,
-  config: McpWardenConfig,
+  config: McpStewardConfig,
   io: CliIo,
   logger: Logger,
 ): Promise<number> {
   const name = targets[0];
   if (name === undefined) {
-    io.stderr(`${command} needs a server name. Run mcpwarden discover to see what is configured.\n`);
+    io.stderr(`${command} needs a server name. Run mcpsteward discover to see what is configured.\n`);
     return EXIT_CODES.usageError;
   }
 
@@ -417,7 +417,7 @@ async function serverCommand(
   if (server === undefined) {
     io.stderr(
       `No configured server named ${JSON.stringify(name)}. ` +
-        `Run mcpwarden discover to see the ${String(inventory.servers.length)} server(s) found.\n`,
+        `Run mcpsteward discover to see the ${String(inventory.servers.length)} server(s) found.\n`,
     );
     return EXIT_CODES.usageError;
   }
@@ -464,7 +464,7 @@ async function serverCommand(
         } catch {
           io.stderr(
             `${server.name} has never been approved, so there is nothing to compare against.\n` +
-              `Review what it advertises, then run: mcpwarden trust ${server.name}\n`,
+              `Review what it advertises, then run: mcpsteward trust ${server.name}\n`,
           );
           return EXIT_CODES.usageError;
         }
@@ -607,7 +607,7 @@ function driftReport(server: ServerRef, drift: ReturnType<typeof diffAgainstPin>
           severity: severityOf(event.risk),
           detail: event.summary,
           remediation:
-            'If this change is expected, re-approve with: mcpwarden trust ' + server.name,
+            'If this change is expected, re-approve with: mcpsteward trust ' + server.name,
           evidence: { risk: event.risk, factors: event.riskFactors.join('; ') },
         })),
       },
@@ -621,7 +621,7 @@ function driftReport(server: ServerRef, drift: ReturnType<typeof diffAgainstPin>
 
 async function verifyCommand(
   flags: GlobalFlags,
-  config: McpWardenConfig,
+  config: McpStewardConfig,
   io: CliIo,
   logger: Logger,
 ): Promise<number> {
@@ -632,7 +632,7 @@ async function verifyCommand(
     policy = await loadPolicy(path);
   } catch {
     io.stderr(
-      `No policy at ${path}.\nGenerate a starting policy with: mcpwarden policy init\n`,
+      `No policy at ${path}.\nGenerate a starting policy with: mcpsteward policy init\n`,
     );
     return EXIT_CODES.usageError;
   }
@@ -678,7 +678,7 @@ async function verifyCommand(
 async function ledgerCommand(
   subcommand: string | undefined,
   flags: GlobalFlags,
-  config: McpWardenConfig,
+  config: McpStewardConfig,
   io: CliIo,
 ): Promise<number> {
   const ledger = new Ledger(ledgerPathFor(flags, config));
@@ -692,7 +692,7 @@ async function ledgerCommand(
         io.stderr(
           `No ledger at ${ledgerPathFor(flags, config)}.\n` +
             'Nothing has been captured on this machine yet, or the file has been removed.\n' +
-            'Record a first entry with: mcpwarden capture <server>\n',
+            'Record a first entry with: mcpsteward capture <server>\n',
         );
         return EXIT_CODES.policyFailure;
       }
@@ -728,7 +728,7 @@ async function ledgerCommand(
         io.stdout(
           flags.format === 'json' || subcommand === 'export'
             ? '[]\n'
-            : 'No ledger yet. Run mcpwarden capture <server> to record a surface.\n',
+            : 'No ledger yet. Run mcpsteward capture <server> to record a surface.\n',
         );
         return EXIT_CODES.success;
       }
@@ -759,7 +759,7 @@ async function ledgerCommand(
 async function policyCommand(
   subcommand: string | undefined,
   flags: GlobalFlags,
-  config: McpWardenConfig,
+  config: McpStewardConfig,
   io: CliIo,
   logger: Logger,
 ): Promise<number> {
@@ -775,7 +775,7 @@ async function policyCommand(
       io.stderr(
         `Wrote ${path}\n` +
           `Allowlisted ${String(policy.allowServers?.length ?? 0)} server(s) already configured here.\n` +
-          'Inline credentials fail immediately, so run mcpwarden verify to see whether any exist.\n',
+          'Inline credentials fail immediately, so run mcpsteward verify to see whether any exist.\n',
       );
       return EXIT_CODES.success;
     }
@@ -791,7 +791,7 @@ async function policyCommand(
 
 async function doctorReport(
   flags: GlobalFlags,
-  config: McpWardenConfig,
+  config: McpStewardConfig,
   cwd: string,
 ): Promise<Report> {
   const inventory = await discover({ projectDirectories: [cwd] });
@@ -833,7 +833,7 @@ async function doctorReport(
 
   return buildReport({
     kind: 'inventory',
-    title: 'mcpwarden doctor',
+    title: 'mcpsteward doctor',
     subject: `${platform()}, Node ${process.version}`,
     toolVersion: VERSION,
     summary: [
@@ -857,7 +857,7 @@ async function doctorReport(
       },
     ],
     notes: [
-      'mcpwarden makes no network requests except to servers you explicitly ask it to inspect.',
+      'mcpsteward makes no network requests except to servers you explicitly ask it to inspect.',
       'discover, ledger verify and policy check never connect to anything at all.',
     ],
     redaction: {},
@@ -870,7 +870,7 @@ async function doctorReport(
 
 function clientFor(
   server: ServerRef,
-  config: McpWardenConfig,
+  config: McpStewardConfig,
   logger: Logger,
   io: CliIo,
 ): McpClient {
@@ -905,8 +905,8 @@ function clientFor(
   );
 }
 
-async function resolveCliConfig(flags: GlobalFlags, io: CliIo): Promise<McpWardenConfig> {
-  const path = flags.configPath ?? 'mcpwarden.config.json';
+async function resolveCliConfig(flags: GlobalFlags, io: CliIo): Promise<McpStewardConfig> {
+  const path = flags.configPath ?? 'mcpsteward.config.json';
 
   let fileConfig = {};
   try {
@@ -925,15 +925,15 @@ async function resolveCliConfig(flags: GlobalFlags, io: CliIo): Promise<McpWarde
 }
 
 function defaultHome(): string {
-  return join(homedir(), '.mcpwarden');
+  return join(homedir(), '.mcpsteward');
 }
 
-function ledgerPathFor(flags: GlobalFlags, config: McpWardenConfig): string {
-  return flags.ledgerPath ?? config.ledgerPath ?? join(defaultHome(), 'surfaces.mcpwarden-ledger');
+function ledgerPathFor(flags: GlobalFlags, config: McpStewardConfig): string {
+  return flags.ledgerPath ?? config.ledgerPath ?? join(defaultHome(), 'surfaces.mcpsteward-ledger');
 }
 
-function policyPathFor(flags: GlobalFlags, config: McpWardenConfig): string {
-  return flags.policyPath ?? config.policyPath ?? 'mcpwarden.policy.json';
+function policyPathFor(flags: GlobalFlags, config: McpStewardConfig): string {
+  return flags.policyPath ?? config.policyPath ?? 'mcpsteward.policy.json';
 }
 
 /**

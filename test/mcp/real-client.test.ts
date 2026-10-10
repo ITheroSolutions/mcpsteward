@@ -1,7 +1,7 @@
 /**
  * The built in MCP server, used the way real clients use it.
  *
- * The dogfood test grades this server with mcpwarden's own client, which numbers
+ * The dogfood test grades this server with mcpsteward's own client, which numbers
  * its requests with strings and speaks only 2026-07-28. Real clients do neither.
  * Sending the server one request with a numeric id showed the id echoed back as
  * an internal token object, which no client could match to its request. It also
@@ -130,7 +130,7 @@ describe('the official SDK client, which opens with the handshake', () => {
     try {
       await client.connect(transport);
 
-      expect(client.getServerVersion()?.name).toBe('mcpwarden');
+      expect(client.getServerVersion()?.name).toBe('mcpsteward');
 
       const { tools } = await client.listTools();
       expect(tools.map((tool) => tool.name).sort()).toEqual([

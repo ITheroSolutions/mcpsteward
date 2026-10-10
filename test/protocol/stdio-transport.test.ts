@@ -14,7 +14,7 @@ function start(mode = 'conforming'): StdioTransport {
   const transport = new StdioTransport({
     command: process.execPath,
     args: [FIXTURE],
-    env: { MCPWARDEN_FIXTURE_MODE: mode },
+    env: { MCPSTEWARD_FIXTURE_MODE: mode },
   });
   transport.start();
   open.push(transport);
@@ -130,7 +130,7 @@ describe('stdio transport, happy path', () => {
 
 describe('stderr handling', () => {
   it('keeps stderr out of the message stream', async () => {
-    // MW-STDIO-003: a client SHOULD NOT assume stderr output indicates an error.
+    // MS-STDIO-003: a client SHOULD NOT assume stderr output indicates an error.
     // A server logging steadily to stderr must not disturb the exchange at all.
     const transport = start('noisy-stderr');
 
@@ -152,7 +152,7 @@ describe('stderr handling', () => {
 
 describe('malformed server output', () => {
   it('ignores a non MCP line on stdout rather than tearing down', async () => {
-    // Writing this is a MW-STDIO-002 violation, which the conformance engine
+    // Writing this is a MS-STDIO-002 violation, which the conformance engine
     // reports as a finding. It is not a reason to abandon the capture.
     const transport = start('writes-junk-to-stdout');
 
@@ -271,7 +271,7 @@ describe('process lifecycle', () => {
 
 describe('shutdown', () => {
   it('exits the server by closing stdin', async () => {
-    // MW-STDIO-006 and MW-STDIO-007: closing stdin is the primary graceful
+    // MS-STDIO-006 and MS-STDIO-007: closing stdin is the primary graceful
     // shutdown signal and the only portable one.
     const transport = start();
     await transport.request(req(1, 'tools/list'), 5000);

@@ -195,7 +195,7 @@ export interface SpecCitation {
 }
 
 export interface ConformanceRule {
-  /** Stable, never reused or renumbered. For example `MW-CACHE-002`. */
+  /** Stable, never reused or renumbered. For example `MS-CACHE-002`. */
   readonly id: string;
   readonly title: string;
   readonly applicableRevisions: readonly ProtocolRevision[];
@@ -354,7 +354,7 @@ export interface LedgerEntry {
   readonly transport: TransportKind;
   readonly surfaceRoot: ContentHash;
   readonly descriptorHashes: Readonly<Record<string, ContentHash>>;
-  /** Version of mcpwarden that wrote the entry. */
+  /** Version of mcpsteward that wrote the entry. */
   readonly toolVersion: string;
   readonly durationMs: number;
   /** The previous entry's `entryHash`, or the genesis constant for sequence zero. */

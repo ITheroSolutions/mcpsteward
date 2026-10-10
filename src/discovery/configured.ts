@@ -3,7 +3,7 @@
  *
  * A server's configuration typically sets environment variables for it
  * (`DATA_DIR`, `DATABASE_URL`, an API key) and, for a remote server, request headers.
- * mcpwarden originally recorded only the *names*, and at connect time looked the
+ * mcpsteward originally recorded only the *names*, and at connect time looked the
  * names up in its own environment instead. So a server whose configuration said
  * `DATA_DIR=C:\data` was started without it, exited, and could not be
  * inspected, even though the operator's own MCP client starts it fine.

@@ -9,7 +9,7 @@ import { allMigrationPatterns, analyzeMigration, patternById } from '../../src/m
 let root: string;
 
 beforeEach(async () => {
-  root = await mkdtemp(join(tmpdir(), 'mcpwarden-migration-'));
+  root = await mkdtemp(join(tmpdir(), 'mcpsteward-migration-'));
 });
 
 afterEach(async () => {
@@ -37,7 +37,7 @@ describe('pattern registry', () => {
 
   it('ties every pattern to a rule in SPEC-NOTES', () => {
     for (const pattern of allMigrationPatterns()) {
-      expect(pattern.rule).toMatch(/^(MW-|SEP-)/);
+      expect(pattern.rule).toMatch(/^(MS-|SEP-)/);
     }
   });
 
@@ -86,7 +86,7 @@ describe('detecting each breaking pattern', () => {
 
     expect(finding?.fix).toContain('server/discover');
     expect(finding?.why).toContain('removed');
-    expect(finding?.rule).toBe('MW-LIFE-005');
+    expect(finding?.rule).toBe('MS-LIFE-005');
   });
 });
 

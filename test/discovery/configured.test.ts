@@ -1,9 +1,9 @@
 /**
  * Starting a server with what its own configuration supplies.
  *
- * Found by running mcpwarden against a real machine: servers exited saying a
+ * Found by running mcpsteward against a real machine: servers exited saying a
  * variable was not set, although their configurations set it. Only the names were recorded, and the values
- * were looked up in mcpwarden's own environment instead.
+ * were looked up in mcpsteward's own environment instead.
  */
 
 import { describe, expect, it } from 'vitest';

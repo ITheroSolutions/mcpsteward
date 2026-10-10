@@ -125,7 +125,7 @@ export interface DiscoverOutcome {
    *
    * `modern` when the server answered `server/discover`, or refused with a
    * recognised modern error. `legacy` when it refused with anything else, which
-   * per MW-STDIO-008 is how a handshake era server presents.
+   * per MS-STDIO-008 is how a handshake era server presents.
    */
   readonly era: ProtocolEra;
   /** The error code the probe received, when it received one. */
@@ -137,7 +137,7 @@ export interface DiscoverOutcome {
 /**
  * Error codes defined by the modern revision.
  *
- * MW-STDIO-008 is explicit that era fallback MUST NOT be keyed to one specific
+ * MS-STDIO-008 is explicit that era fallback MUST NOT be keyed to one specific
  * error code, because legacy servers answer an unknown pre-`initialize` request
  * with whatever their implementation happens to use. So the test is inverted:
  * a *recognised modern* error means modern, and anything else means legacy.
@@ -211,7 +211,7 @@ export class McpClient {
 
   private nextId(): string {
     this.requestCounter += 1;
-    return `mw-${String(this.requestCounter)}`;
+    return `ms-${String(this.requestCounter)}`;
   }
 
   private get timeoutMs(): number {
@@ -221,7 +221,7 @@ export class McpClient {
   /**
    * Call `server/discover`.
    *
-   * Servers MUST implement this (MW-LIFE-001), so a method-not-found answer is a
+   * Servers MUST implement this (MS-LIFE-001), so a method-not-found answer is a
    * conformance finding rather than a transport failure. It is reported as
    * `implemented: false` and capture continues, because a non conforming server is
    * exactly the thing this package exists to inspect: refusing to look at it would
@@ -387,7 +387,7 @@ export class McpClient {
     const requested = this.options.preferredRevision ?? SUPPORTED_REVISIONS[0];
     const discover = await this.discoverOrRestart(requested);
 
-    // The era probe said this is a handshake era server (MW-STDIO-008).
+    // The era probe said this is a handshake era server (MS-STDIO-008).
     //
     // Proceeding as though it were modern is the trap this whole path exists to
     // avoid. A legacy server will happily answer an era ambiguous method such as
@@ -769,7 +769,7 @@ function readError(response: JsonObject): JsonRpcErrorShape | undefined {
 /**
  * Read the `supported` list from an `UnsupportedProtocolVersionError`.
  *
- * MW-ERR-006 requires `data.supported` and `data.requested`.
+ * MS-ERR-006 requires `data.supported` and `data.requested`.
  */
 function readSupportedVersions(data: JsonValue | undefined): readonly string[] {
   const record = asObject(data);

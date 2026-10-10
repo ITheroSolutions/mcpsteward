@@ -35,7 +35,7 @@ export interface RegisteredRule {
 
 const MODERN = ['2026-07-28'] as const;
 
-/** Methods whose results must carry caching hints, per MW-CACHE-001. */
+/** Methods whose results must carry caching hints, per MS-CACHE-001. */
 const CACHEABLE_METHODS = new Set([
   'server/discover',
   'tools/list',
@@ -71,7 +71,7 @@ export const RULES: readonly RegisteredRule[] = [
   // ---------------------------------------------------------------- lifecycle
   {
     rule: {
-      id: 'MW-LIFE-001',
+      id: 'MS-LIFE-001',
       title: 'server/discover is implemented',
       applicableRevisions: MODERN,
       severity: 'critical',
@@ -96,7 +96,7 @@ export const RULES: readonly RegisteredRule[] = [
 
   {
     rule: {
-      id: 'MW-LIFE-002',
+      id: 'MS-LIFE-002',
       title: 'DiscoverResult declares supported versions and capabilities',
       applicableRevisions: MODERN,
       severity: 'high',
@@ -128,7 +128,7 @@ export const RULES: readonly RegisteredRule[] = [
 
   {
     rule: {
-      id: 'MW-LIFE-003',
+      id: 'MS-LIFE-003',
       title: 'Server identifies itself in the discover result',
       applicableRevisions: MODERN,
       severity: 'low',
@@ -152,7 +152,7 @@ export const RULES: readonly RegisteredRule[] = [
 
   {
     rule: {
-      id: 'MW-LIFE-007',
+      id: 'MS-LIFE-007',
       title: 'Removed methods are not implemented',
       applicableRevisions: MODERN,
       severity: 'medium',
@@ -180,7 +180,7 @@ export const RULES: readonly RegisteredRule[] = [
   // -------------------------------------------------------------------- results
   {
     rule: {
-      id: 'MW-RES-001',
+      id: 'MS-RES-001',
       title: 'Every result declares resultType',
       applicableRevisions: MODERN,
       severity: 'high',
@@ -215,7 +215,7 @@ export const RULES: readonly RegisteredRule[] = [
 
   {
     rule: {
-      id: 'MW-RES-002',
+      id: 'MS-RES-002',
       title: 'resultType uses a defined value',
       applicableRevisions: MODERN,
       severity: 'medium',
@@ -245,7 +245,7 @@ export const RULES: readonly RegisteredRule[] = [
   // -------------------------------------------------------------------- caching
   {
     rule: {
-      id: 'MW-CACHE-001',
+      id: 'MS-CACHE-001',
       title: 'Cacheable results carry caching hints',
       applicableRevisions: MODERN,
       severity: 'high',
@@ -284,7 +284,7 @@ export const RULES: readonly RegisteredRule[] = [
 
   {
     rule: {
-      id: 'MW-CACHE-002',
+      id: 'MS-CACHE-002',
       title: 'ttlMs is a non negative integer',
       applicableRevisions: MODERN,
       severity: 'medium',
@@ -318,7 +318,7 @@ export const RULES: readonly RegisteredRule[] = [
 
   {
     rule: {
-      id: 'MW-CACHE-003',
+      id: 'MS-CACHE-003',
       title: 'cacheScope is public or private',
       applicableRevisions: MODERN,
       severity: 'medium',
@@ -351,7 +351,7 @@ export const RULES: readonly RegisteredRule[] = [
 
   {
     rule: {
-      id: 'MW-CACHE-004',
+      id: 'MS-CACHE-004',
       title: 'cacheScope is consistent across pages',
       applicableRevisions: MODERN,
       severity: 'low',
@@ -395,7 +395,7 @@ export const RULES: readonly RegisteredRule[] = [
   // ---------------------------------------------------------------------- tools
   {
     rule: {
-      id: 'MW-TOOL-001',
+      id: 'MS-TOOL-001',
       title: 'x-mcp-header annotations are valid',
       applicableRevisions: MODERN,
       severity: 'high',
@@ -467,7 +467,7 @@ export const RULES: readonly RegisteredRule[] = [
 
   {
     rule: {
-      id: 'MW-TOOL-002',
+      id: 'MS-TOOL-002',
       title: 'tools/list order is deterministic',
       applicableRevisions: MODERN,
       severity: 'low',
@@ -493,7 +493,7 @@ export const RULES: readonly RegisteredRule[] = [
 
   {
     rule: {
-      id: 'MW-TOOL-003',
+      id: 'MS-TOOL-003',
       title: 'Tool schemas declare a supported JSON Schema dialect',
       applicableRevisions: MODERN,
       severity: 'medium',
@@ -532,7 +532,7 @@ export const RULES: readonly RegisteredRule[] = [
 
   {
     rule: {
-      id: 'MW-TOOL-004',
+      id: 'MS-TOOL-004',
       title: 'Tool schemas do not reference remote $refs',
       applicableRevisions: MODERN,
       severity: 'high',
@@ -566,7 +566,7 @@ export const RULES: readonly RegisteredRule[] = [
   // ---------------------------------------------------------------------- icons
   {
     rule: {
-      id: 'MW-ICON-001',
+      id: 'MS-ICON-001',
       title: 'Icon sources use a safe scheme',
       applicableRevisions: MODERN,
       severity: 'high',
@@ -599,7 +599,7 @@ export const RULES: readonly RegisteredRule[] = [
   // ----------------------------------------------------------------- extensions
   {
     rule: {
-      id: 'MW-EXT-001',
+      id: 'MS-EXT-001',
       title: 'Extension identifiers carry a prefix',
       applicableRevisions: MODERN,
       severity: 'low',
@@ -634,7 +634,7 @@ export const RULES: readonly RegisteredRule[] = [
   // --------------------------------------------------------------- deprecations
   {
     rule: {
-      id: 'MW-DEP-001',
+      id: 'MS-DEP-001',
       title: 'Deprecated capabilities are not declared',
       applicableRevisions: MODERN,
       severity: 'info',

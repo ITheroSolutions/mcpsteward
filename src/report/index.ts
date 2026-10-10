@@ -224,7 +224,7 @@ function renderMarkdown(report: Report): string {
   lines.push('');
   lines.push(`**Subject:** ${report.subject}  `);
   lines.push(`**Generated:** ${report.generatedAt}  `);
-  lines.push(`**mcpwarden:** ${report.toolVersion}`);
+  lines.push(`**mcpsteward:** ${report.toolVersion}`);
   lines.push('');
 
   if (report.summary.length > 0) {
@@ -308,9 +308,9 @@ function renderSarif(report: Report): string {
       {
         tool: {
           driver: {
-            name: 'mcpwarden',
+            name: 'mcpsteward',
             version: report.toolVersion,
-            informationUri: 'https://github.com/ITheroSolutions/mcpwarden',
+            informationUri: 'https://github.com/ITheroSolutions/mcpsteward',
             rules: [...rules.values()].map((item) => ({
               id: item.id,
               name: item.title,
@@ -480,7 +480,7 @@ ul { padding-left: 1.2rem; color: var(--muted); }
 <div class="stats">${summary}</div>
 ${rows}
 ${notes}
-<footer>Generated ${escapeHtml(report.generatedAt)} by mcpwarden ${escapeHtml(
+<footer>Generated ${escapeHtml(report.generatedAt)} by mcpsteward ${escapeHtml(
     report.toolVersion,
   )}. ${isClean(report) ? 'Nothing was found.' : ''} This file is self contained and makes no network requests.</footer>
 </main>

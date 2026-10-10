@@ -11,7 +11,7 @@
 
 import { readFile } from 'node:fs/promises';
 
-import { toMcpWardenError } from '../core/errors.js';
+import { toMcpStewardError } from '../core/errors.js';
 import { NOOP_LOGGER, type Logger } from '../core/logger.js';
 import type { AuthPosture, ServerRef } from '../core/types.js';
 import { knownClients, projectConfigCandidates, type ClientDefinition } from './clients.js';
@@ -107,7 +107,7 @@ export async function discover(options: DiscoveryOptions = {}): Promise<Inventor
           reason:
             code === 'EACCES' || code === 'EPERM'
               ? 'permission denied'
-              : toMcpWardenError(error, 'reading configuration').message,
+              : toMcpStewardError(error, 'reading configuration').message,
         });
         continue;
       }
@@ -122,7 +122,7 @@ export async function discover(options: DiscoveryOptions = {}): Promise<Inventor
         // One malformed file must not abort the whole inventory. The rest of the
         // machine is still worth reporting, and the problem is recorded so the
         // result is never silently partial.
-        const wrapped = toMcpWardenError(error, 'parsing configuration');
+        const wrapped = toMcpStewardError(error, 'parsing configuration');
         logger.warn('could not parse a client configuration', { configPath });
         problems.push({ configPath, client: client.id, reason: wrapped.message });
       }

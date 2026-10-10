@@ -9,9 +9,9 @@ docs/api/
 
 # Captured state. Never commit a real server surface, a ledger, or a pin:
 # they can carry endpoint names, argument shapes, and operator identity.
-*.mcpwarden-ledger
-*.mcpwarden-ledger.*
-.mcpwarden/
+*.mcpsteward-ledger
+*.mcpsteward-ledger.*
+.mcpsteward/
 captures/
 *.surface.json
 *.pin.json

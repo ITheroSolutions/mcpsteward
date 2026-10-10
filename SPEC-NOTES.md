@@ -29,7 +29,7 @@ in VERIFY.md as deferred rather than invented.
 
 ## Revisions supported
 
-| Revision | Era | Support in mcpwarden |
+| Revision | Era | Support in mcpsteward |
 | --- | --- | --- |
 | `2026-07-28` | modern, stateless, per request metadata | full, primary target |
 | `2025-11-25` | legacy, `initialize` handshake, sessions | capture and downgrade detection only |
@@ -64,7 +64,7 @@ lists of what changed.
 
 ## Observability model
 
-mcpwarden inspects a server while acting as a client. Requirements are therefore
+mcpsteward inspects a server while acting as a client. Requirements are therefore
 classified by who they bind and whether an external client can observe compliance.
 
 - **SERVER, observable**: eligible to become a graded conformance rule.
@@ -79,41 +79,41 @@ the requirement, and the citation. Wording in quotes is verbatim from the cited 
 
 ### Lifecycle and statelessness
 
-**MW-LIFE-001** MUST, SERVER, observable
+**MS-LIFE-001** MUST, SERVER, observable
 Servers MUST implement `server/discover`. Quote: "Servers **MUST** implement
 `server/discover`."
 Citation: Versioning and Compatibility, Protocol Version Negotiation; Discovery.
 
-**MW-LIFE-002** MUST, SERVER, observable
+**MS-LIFE-002** MUST, SERVER, observable
 A `DiscoverResult` includes `supportedVersions` (protocol versions the server supports)
 and `capabilities`. `instructions` is optional.
 Citation: Discovery, Data Types, DiscoverResult.
 
-**MW-LIFE-003** SHOULD, SERVER, observable
+**MS-LIFE-003** SHOULD, SERVER, observable
 Servers SHOULD include `_meta['io.modelcontextprotocol/serverInfo']` in the discover
 result. Quote: "Servers **SHOULD** include this field."
 Citation: Discovery, Data Types.
 
-**MW-LIFE-004** SHOULD, SERVER, observable
+**MS-LIFE-004** SHOULD, SERVER, observable
 Servers SHOULD include `io.modelcontextprotocol/serverInfo` in every result's `_meta`.
 Quote: "Servers **SHOULD** include the following `io.modelcontextprotocol/*` field in
 every result's `_meta`, unless specifically configured not to do so".
 Citation: Base protocol overview, Per response protocol fields.
 
-**MW-LIFE-005** MUST NOT, SERVER, partially observable
+**MS-LIFE-005** MUST NOT, SERVER, partially observable
 The `initialize` and `notifications/initialized` handshake is removed. A server
 presenting itself as `2026-07-28` only should not require it. A modern only server
 SHOULD name its supported versions in any error it returns to an `initialize` request.
 Citation: Key Changes major change 2; Versioning and Compatibility, Backward
 Compatibility.
 
-**MW-LIFE-006** MUST NOT, SERVER, observable
+**MS-LIFE-006** MUST NOT, SERVER, observable
 Servers MUST NOT rely on prior requests over the same connection to establish context.
 Quote: "Servers **MUST NOT** rely on prior requests over the same connection to
 establish context (e.g., capabilities, protocol version, client identity)."
 Citation: Base protocol overview, Statelessness.
 
-**MW-LIFE-007** MUST, SERVER, observable
+**MS-LIFE-007** MUST, SERVER, observable
 `ping`, `logging/setLevel` and `notifications/roots/list_changed` are removed. A
 `2026-07-28` server receiving `ping` or `logging/setLevel` is expected to answer
 method not found rather than implement them.
@@ -121,54 +121,54 @@ Citation: Key Changes major change 5.
 
 ### Results and result types
 
-**MW-RES-001** MUST, SERVER, observable
+**MS-RES-001** MUST, SERVER, observable
 Every result MUST include a `resultType` field. Quote: "The `result` **MUST** include a
 `resultType` field to indicate the type of the result."
 Citation: Base protocol overview, Result Responses.
 
-**MW-RES-002** MUST, SERVER, observable
+**MS-RES-002** MUST, SERVER, observable
 `resultType` is `"complete"` for ordinary results and `"input_required"` for MRTR
 interim results. Extensions MAY add values, but only values advertised via capabilities.
 Citation: Base protocol overview, ResultType; Key Changes major change 8.
 
-**MW-RES-003** MUST, CLIENT
+**MS-RES-003** MUST, CLIENT
 Clients MUST treat an absent `resultType` from earlier protocol servers as
 `"complete"`.
 Citation: Base protocol overview, ResultType.
 
 ### Caching
 
-**MW-CACHE-001** MUST, SERVER, observable
+**MS-CACHE-001** MUST, SERVER, observable
 Servers MUST include caching hints on results with `resultType: "complete"` returned by
 `server/discover`, `tools/list`, `prompts/list`, `resources/list`,
 `resources/templates/list` and `resources/read`. Quote: "Servers MUST include caching
 hints on results with `resultType: \"complete\"` returned by the following operations".
 Citation: Caching, Cacheable Results.
 
-**MW-CACHE-002** MUST, SERVER, observable
+**MS-CACHE-002** MUST, SERVER, observable
 Servers MUST provide a `ttlMs` value that is greater than or equal to zero. Quote:
 "Servers **MUST** provide a `ttlMs` value that is `>= 0`."
 `ttlMs` is an integer count of milliseconds.
 Citation: Caching, Time to Live Field.
 
-**MW-CACHE-003** MUST, SERVER, observable
+**MS-CACHE-003** MUST, SERVER, observable
 `cacheScope` is either `"public"` or `"private"`. No other value is defined.
 Citation: Caching, Cacheable Model and Cache Scope Field.
 
-**MW-CACHE-004** MUST, SERVER, observable
+**MS-CACHE-004** MUST, SERVER, observable
 Servers MUST apply the same `cacheScope` to all response pages for a given list request.
 Quote: "Servers **MUST** apply the same `cacheScope` to all response pages for a given
 list request."
 Citation: Caching, Interaction with Pagination.
 
-**MW-CACHE-005** MUST NOT, SERVER, not externally observable
+**MS-CACHE-005** MUST NOT, SERVER, not externally observable
 Interim results with `resultType: "input_required"` are not cacheable and carry no
 caching hints.
 Citation: Caching, Cacheable Results.
 
 ### Per request metadata
 
-**MW-META-001** MUST, SERVER, observable
+**MS-META-001** MUST, SERVER, observable
 A request missing a required `_meta` field is malformed and the server MUST reject it
 with `-32602` (Invalid params), and on HTTP the status MUST be `400 Bad Request`.
 Quote: "A request missing any required field is malformed; the server **MUST** reject it
@@ -178,13 +178,13 @@ Required fields are `io.modelcontextprotocol/protocolVersion` and
 `io.modelcontextprotocol/clientCapabilities`.
 Citation: Base protocol overview, Per request protocol fields.
 
-**MW-META-002** MUST, SERVER, observable
+**MS-META-002** MUST, SERVER, observable
 A server MUST NOT rely on capabilities the client has not declared, and MUST return
 `MissingRequiredClientCapabilityError` (`-32021`) with `data.requiredCapabilities`
 listing the missing capabilities, `400 Bad Request` on HTTP.
 Citation: Base protocol overview, Per request protocol fields.
 
-**MW-META-003** MUST, BOTH, observable
+**MS-META-003** MUST, BOTH, observable
 Reserved `_meta` key prefixes: any prefix whose second label is `modelcontextprotocol`
 or `mcp` is reserved for MCP use. Key names have an optional dotted prefix ending in a
 slash, and a name that begins and ends with an alphanumeric character and may contain
@@ -192,67 +192,67 @@ hyphens, underscores and dots in between. `traceparent`, `tracestate` and `bagga
 reserved exceptions to the prefix rule.
 Citation: Base protocol overview, `_meta`.
 
-**MW-META-004** MUST, SERVER, observable
+**MS-META-004** MUST, SERVER, observable
 On notifications delivered via a `subscriptions/listen` stream the server MUST include
 `io.modelcontextprotocol/subscriptionId` in `_meta`.
 Citation: Base protocol overview, Per response protocol fields.
 
-**MW-META-005** MUST NOT, SERVER, observable
+**MS-META-005** MUST NOT, SERVER, observable
 Servers MUST NOT emit `notifications/message` for requests that did not include
 `io.modelcontextprotocol/logLevel` in `_meta`.
 Citation: Key Changes major change 5.
 
 ### Error codes
 
-**MW-ERR-001** MUST NOT, SERVER, observable
+**MS-ERR-001** MUST NOT, SERVER, observable
 The range `-32020` to `-32099` is reserved for the MCP specification. Implementations
 MUST NOT emit any code from this sub range that is not defined by the specification and
 MUST use defined codes only with their specified meanings.
 Citation: Base protocol overview, Error Codes.
 
-**MW-ERR-002** MUST NOT, SERVER, observable
+**MS-ERR-002** MUST NOT, SERVER, observable
 Implementations of this protocol version MUST NOT emit `-32002` (resource not found,
 replaced by `-32602`) or `-32042` (URL elicitation required).
 Citation: Base protocol overview, Error Codes.
 
-**MW-ERR-003** MUST, SERVER, observable
+**MS-ERR-003** MUST, SERVER, observable
 Defined MCP error codes are exactly: `-32020` `HeaderMismatch`, `-32021`
 `MissingRequiredClientCapability`, `-32022` `UnsupportedProtocolVersion`.
 Citation: Base protocol overview, Error Codes.
 
-**MW-ERR-004** SHOULD NOT, SERVER, observable
+**MS-ERR-004** SHOULD NOT, SERVER, observable
 New implementations SHOULD NOT use codes from `-32000` to `-32019` at all. New codes
 MUST NOT be allocated in that sub range.
 Citation: Base protocol overview, Error Codes.
 
-**MW-ERR-005** MUST, SERVER, observable
+**MS-ERR-005** MUST, SERVER, observable
 Resource not found is reported as `-32602` (Invalid Params) in this revision.
 Citation: Key Changes minor change 6.
 
-**MW-ERR-006** MUST, SERVER, observable
+**MS-ERR-006** MUST, SERVER, observable
 `UnsupportedProtocolVersionError` carries `data.supported` (array of versions) and
 `data.requested`.
 Citation: Versioning and Compatibility, Protocol Version Negotiation.
 
 ### Streamable HTTP transport
 
-**MW-HTTP-001** MUST, SERVER, observable
+**MS-HTTP-001** MUST, SERVER, observable
 The server MUST provide a single HTTP endpoint path supporting POST.
 Citation: Streamable HTTP, opening section.
 
-**MW-HTTP-002** MUST, SERVER, observable
+**MS-HTTP-002** MUST, SERVER, observable
 Every POST request MUST include an `MCP-Protocol-Version` header, and its value MUST
 match `io.modelcontextprotocol/protocolVersion` in the body `_meta`. On mismatch the
 server MUST reject with `400 Bad Request` and a `HeaderMismatch` error.
 Citation: Streamable HTTP, Protocol Version Header.
 
-**MW-HTTP-003** MUST, BOTH, observable
+**MS-HTTP-003** MUST, BOTH, observable
 `Mcp-Method` (source field `method`) is required on all requests. `Mcp-Name` (source
 field `params.name` or `params.uri`) is required for `tools/call`, `resources/read` and
 `prompts/get`. Quote: "These headers are **REQUIRED** for compliance."
 Citation: Streamable HTTP, Standard Request Headers.
 
-**MW-HTTP-004** MUST, SERVER, observable
+**MS-HTTP-004** MUST, SERVER, observable
 Servers that process the request body MUST reject requests where header values do not
 match the corresponding body values, returning HTTP `400 Bad Request` and JSON-RPC error
 `-32020` (`HeaderMismatch`). Validation failures include a missing required standard
@@ -260,91 +260,91 @@ header, a value mismatch, and a value containing invalid characters. Servers MUS
 the `=?base64?...?=` sentinel encoding before comparing.
 Citation: Streamable HTTP, Server Validation.
 
-**MW-HTTP-005** MUST, SERVER, observable
+**MS-HTTP-005** MUST, SERVER, observable
 If the server does not implement the requested RPC method it MUST respond `404 Not
 Found` with JSON-RPC error `-32601`.
 Citation: Streamable HTTP, Protocol Version Header.
 
-**MW-HTTP-006** MUST, SERVER, observable
+**MS-HTTP-006** MUST, SERVER, observable
 If the body is a JSON-RPC notification and the server accepts it, the server MUST return
 `202 Accepted` with no body.
 Citation: Streamable HTTP, Sending Messages.
 
-**MW-HTTP-007** MUST, SERVER, observable
+**MS-HTTP-007** MUST, SERVER, observable
 If the body is a JSON-RPC request the server MUST return either
 `Content-Type: application/json` or `Content-Type: text/event-stream`.
 Citation: Streamable HTTP, Sending Messages.
 
-**MW-HTTP-008** MUST NOT, SERVER, observable
+**MS-HTTP-008** MUST NOT, SERVER, observable
 The server MUST NOT send independent JSON-RPC requests on a response stream. Server to
 client interactions are embedded as `inputRequests` inside an `InputRequiredResult`.
 Citation: Streamable HTTP, Receiving Messages.
 
-**MW-HTTP-009** MUST, SERVER, observable
+**MS-HTTP-009** MUST, SERVER, observable
 Servers MUST validate the `Origin` header, and if present and invalid MUST respond
 `403 Forbidden`.
 Citation: Streamable HTTP, Security and Endpoint.
 
-**MW-HTTP-010** SHOULD, SERVER, observable
+**MS-HTTP-010** SHOULD, SERVER, observable
 When running locally servers SHOULD bind only to localhost rather than all interfaces.
 Citation: Streamable HTTP, Security and Endpoint.
 
-**MW-HTTP-011** SHOULD, SERVER, observable
+**MS-HTTP-011** SHOULD, SERVER, observable
 A server supporting only this revision SHOULD respond `405 Method Not Allowed` to HTTP
 GET or DELETE on the MCP endpoint, SHOULD ignore an `Mcp-Session-Id` header and not mint
 or echo session IDs, and SHOULD ignore `Last-Event-ID`.
 Citation: Streamable HTTP, Earlier Streamable HTTP Revisions.
 
-**MW-HTTP-012** MUST NOT, SERVER, observable
+**MS-HTTP-012** MUST NOT, SERVER, observable
 Sessions and the `Mcp-Session-Id` header are removed. Resumable SSE via `Last-Event-ID`
 is not supported. Quote: "Resumable SSE streams via `Last-Event-ID` are not supported."
 Citation: Key Changes major changes 1 and 9; Streamable HTTP, Receiving Messages.
 
-**MW-HTTP-013** SHOULD, SERVER, observable
+**MS-HTTP-013** SHOULD, SERVER, observable
 Servers SHOULD include `X-Accel-Buffering: no` when initiating an SSE stream.
 Citation: Streamable HTTP, Receiving Messages.
 
 ### stdio transport
 
-**MW-STDIO-001** MUST NOT, SERVER, observable
+**MS-STDIO-001** MUST NOT, SERVER, observable
 Messages are delimited by newlines and MUST NOT contain embedded newlines. Quote:
 "Messages are delimited by newlines, and **MUST NOT** contain embedded newlines."
 There is no `Content-Length` framing and no header layer.
 Citation: stdio, opening section; Request Metadata.
 
-**MW-STDIO-002** MUST NOT, SERVER, observable
+**MS-STDIO-002** MUST NOT, SERVER, observable
 The server MUST NOT write anything to `stdout` that is not a valid MCP message.
 Quote: "The server **MUST NOT** write anything to its `stdout` that is not a valid MCP
 message."
 Citation: stdio, opening section.
 
-**MW-STDIO-003** MAY, SERVER, observable
+**MS-STDIO-003** MAY, SERVER, observable
 The server MAY write UTF-8 strings to `stderr` for any logging purpose. The client MAY
 capture, forward or ignore it and SHOULD NOT assume `stderr` output indicates an error.
 Citation: stdio, opening section.
 
-**MW-STDIO-004** MUST NOT, SERVER, observable
+**MS-STDIO-004** MUST NOT, SERVER, observable
 The server MUST NOT write JSON-RPC requests to `stdout`. Server to client interactions
 are carried in `InputRequiredResult` replies.
 Citation: stdio, Receiving Messages.
 
-**MW-STDIO-005** MUST, CLIENT
+**MS-STDIO-005** MUST, CLIENT
 On stdio the client MUST send `notifications/cancelled` referencing the request id in
 order to cancel. Unlike Streamable HTTP there is no per request stream to close.
 Citation: stdio, Cancellation.
 
-**MW-STDIO-006** SHOULD, SERVER, observable
+**MS-STDIO-006** SHOULD, SERVER, observable
 Servers SHOULD exit promptly when standard input is closed or reads return end of file.
 Quote: "This is the primary graceful-shutdown signal and the only portable one".
 Citation: stdio, Shutdown.
 
-**MW-STDIO-007** SHOULD, CLIENT
+**MS-STDIO-007** SHOULD, CLIENT
 The client SHOULD shut down by closing the input stream, waiting for exit, then forcibly
 terminating if the server does not exit within a reasonable time. On Windows, where POSIX
 signals are unavailable, `TerminateProcess` or Job Objects are named as the mechanism.
 Citation: stdio, Shutdown.
 
-**MW-STDIO-008** SHOULD and MUST NOT, CLIENT
+**MS-STDIO-008** SHOULD and MUST NOT, CLIENT
 A dual era client SHOULD probe with `server/discover` before any other request. Three
 outcomes: a `DiscoverResult` means modern; a recognised modern JSON-RPC error means
 modern but with a different version, and the client MUST NOT fall back to `initialize`;
@@ -354,7 +354,7 @@ unknown pre-`initialize` requests with implementation defined errors, commonly `
 or `-32602`, or not at all.
 Citation: stdio, Backward Compatibility.
 
-**MW-STDIO-009** RECOMMENDED, CLIENT
+**MS-STDIO-009** RECOMMENDED, CLIENT
 A modern only client does not need to probe, but probing is still recommended: some
 legacy servers do not validate that a request arrives after `initialize` and would
 process an era ambiguous method such as `tools/call` under legacy semantics. Probing
@@ -363,7 +363,7 @@ Citation: stdio, Backward Compatibility.
 
 ### Tool definitions and `x-mcp-header`
 
-**MW-TOOL-001** MUST, SERVER, observable
+**MS-TOOL-001** MUST, SERVER, observable
 Constraints on every `x-mcp-header` value in a tool `inputSchema`. The value MUST NOT be
 empty; MUST match HTTP field name token syntax (`1*tchar`, RFC 9110 section 5.1); MUST
 NOT contain control characters including CR or LF; MUST be case insensitively unique
@@ -377,30 +377,30 @@ tool definition — invalid."
 Integer values MUST be within the JavaScript safe range.
 Citation: Streamable HTTP, Schema Extension.
 
-**MW-TOOL-002** SHOULD, SERVER, observable
+**MS-TOOL-002** SHOULD, SERVER, observable
 Servers SHOULD return tools from `tools/list` in a deterministic order.
 Citation: Key Changes minor change 3.
 
-**MW-TOOL-003** MUST, BOTH, observable
+**MS-TOOL-003** MUST, BOTH, observable
 Schemas without a `$schema` field default to JSON Schema 2020-12. Implementations MUST
 support at least 2020-12. Schemas MUST be valid according to their declared or default
 dialect.
 Citation: Base protocol overview, JSON Schema Usage.
 
-**MW-TOOL-004** MUST NOT, BOTH, observable
+**MS-TOOL-004** MUST NOT, BOTH, observable
 Implementations MUST NOT automatically dereference `$ref` values that resolve to a
 network URI. An opt in mode MUST be disabled by default. Schemas that fail to validate
 due to an unresolved external `$ref` SHOULD be rejected rather than treated as
 permissive.
 Citation: Base protocol overview, `$ref` Resolution.
 
-**MW-TOOL-005** SHOULD, BOTH, observable
+**MS-TOOL-005** SHOULD, BOTH, observable
 Implementations SHOULD bound composition keyword use (`anyOf`, `oneOf`, `allOf`,
 `if`/`then`/`else`, `$defs`) with a maximum depth, a subschema cap or a time budget, to
 prevent a malicious schema acting as a denial of service vector.
 Citation: Base protocol overview, Composition Keyword Resource Use.
 
-**MW-TOOL-006** MUST, CLIENT
+**MS-TOOL-006** MUST, CLIENT
 Clients using Streamable HTTP MUST reject tool definitions whose `x-mcp-header` values
 violate the constraints, by excluding the invalid tool from the result of `tools/list`,
 and SHOULD log a warning naming the tool and the reason.
@@ -408,7 +408,7 @@ Citation: Streamable HTTP, Schema Extension.
 
 ### Icons
 
-**MW-ICON-001** MUST, BOTH, observable
+**MS-ICON-001** MUST, BOTH, observable
 Icon `src` MUST be an HTTPS or `data:` URI. Clients MUST reject unsafe schemes such as
 `javascript:`, `file:`, `ftp:`, `ws:` and local app schemes, and MUST disallow scheme
 changes and cross origin redirects.
@@ -416,13 +416,13 @@ Citation: Base protocol overview, `icons`, Security considerations.
 
 ### Extensions
 
-**MW-EXT-001** MUST, BOTH, observable
+**MS-EXT-001** MUST, BOTH, observable
 Extensions are advertised in the `extensions` field of `ClientCapabilities` and
 `ServerCapabilities`, as a map of extension identifier to a settings object. Extension
 identifiers MUST follow the `_meta` key naming rules with a mandatory prefix.
 Citation: Versioning and Compatibility, Extension Negotiation; Key Changes minor change 1.
 
-**MW-EXT-002** MUST, BOTH, not externally observable
+**MS-EXT-002** MUST, BOTH, not externally observable
 If one party supports an extension and the other does not, the supporting party MUST
 either revert to core protocol behavior or reject the request with an appropriate error.
 Citation: Versioning and Compatibility, Extension Negotiation.
@@ -433,44 +433,44 @@ Deprecated features remain functional during a minimum twelve month window. New
 implementations should not adopt them. These generate advisory findings, never graded
 MUST failures.
 
-**MW-DEP-001** Roots, Sampling and Logging are deprecated (SEP-2577). Suggested
+**MS-DEP-001** Roots, Sampling and Logging are deprecated (SEP-2577). Suggested
 migrations: pass directories or files via tool parameters, resource URIs or server
 configuration instead of Roots; integrate directly with LLM provider APIs instead of
 Sampling; log to stderr on stdio or use OpenTelemetry instead of Logging.
 Citation: Key Changes, Deprecated 1.
 
-**MW-DEP-002** The HTTP+SSE transport from `2024-11-05` is reclassified as Deprecated
+**MS-DEP-002** The HTTP+SSE transport from `2024-11-05` is reclassified as Deprecated
 (SEP-2596).
 Citation: Key Changes, Deprecated 2.
 
-**MW-DEP-003** `includeContext` values `"thisServer"` and `"allServers"` are Deprecated.
+**MS-DEP-003** `includeContext` values `"thisServer"` and `"allServers"` are Deprecated.
 Citation: Key Changes, Deprecated 3.
 
-**MW-DEP-004** OAuth 2.0 Dynamic Client Registration (RFC 7591) is deprecated in favour
+**MS-DEP-004** OAuth 2.0 Dynamic Client Registration (RFC 7591) is deprecated in favour
 of Client ID Metadata Documents.
 Citation: Key Changes, Deprecated 4.
 
 ### Authorization
 
 Recorded for the migration analyzer. Not gradable without performing an authorization
-flow, which mcpwarden does not do.
+flow, which mcpsteward does not do.
 
-**MW-AUTH-001** SHOULD and MUST, split. Authorization servers SHOULD include the `iss`
+**MS-AUTH-001** SHOULD and MUST, split. Authorization servers SHOULD include the `iss`
 parameter per RFC 9207, and MCP clients MUST validate a present `iss` against the
 recorded issuer before redeeming the authorization code.
 Citation: Key Changes minor change 7.
 
-**MW-AUTH-002** MUST, CLIENT. Clients MUST specify an appropriate `application_type`
+**MS-AUTH-002** MUST, CLIENT. Clients MUST specify an appropriate `application_type`
 during Dynamic Client Registration.
 Citation: Key Changes minor change 8.
 
-**MW-AUTH-003** MUST, CLIENT. Client credentials are bound to the issuing authorization
+**MS-AUTH-003** MUST, CLIENT. Client credentials are bound to the issuing authorization
 server. Clients MUST key persisted credentials by issuer identifier, MUST NOT reuse them
 with a different authorization server, and MUST re register when the authorization
 server changes.
 Citation: Key Changes minor change 9.
 
-**MW-AUTH-004** SHOULD NOT, SERVER. Implementations using stdio SHOULD NOT follow the
+**MS-AUTH-004** SHOULD NOT, SERVER. Implementations using stdio SHOULD NOT follow the
 authorization specification and should instead retrieve credentials from the
 environment.
 Citation: Base protocol overview, Auth.
@@ -482,22 +482,22 @@ above. Used by the migration analyzer.
 
 | Signal | Breaks because | Rule |
 | --- | --- | --- |
-| `initialize` or `notifications/initialized` handler | handshake removed | MW-LIFE-005 |
-| Reading or writing `Mcp-Session-Id` | sessions removed | MW-HTTP-012 |
-| Session or connection scoped state keyed by connection | statelessness | MW-LIFE-006 |
-| HTTP GET stream endpoint | GET endpoint removed | MW-HTTP-011 |
-| `Last-Event-ID` or SSE event id resumability | resumability removed | MW-HTTP-012 |
+| `initialize` or `notifications/initialized` handler | handshake removed | MS-LIFE-005 |
+| Reading or writing `Mcp-Session-Id` | sessions removed | MS-HTTP-012 |
+| Session or connection scoped state keyed by connection | statelessness | MS-LIFE-006 |
+| HTTP GET stream endpoint | GET endpoint removed | MS-HTTP-011 |
+| `Last-Event-ID` or SSE event id resumability | resumability removed | MS-HTTP-012 |
 | `resources/subscribe` or `resources/unsubscribe` | replaced by `subscriptions/listen` | Key Changes major change 4 |
-| `ping` or `logging/setLevel` handler | methods removed | MW-LIFE-007 |
+| `ping` or `logging/setLevel` handler | methods removed | MS-LIFE-007 |
 | `tasks/result` or `tasks/list` | tasks moved to extension and redesigned | Key Changes major change 6 |
-| Server initiated `roots/list`, `sampling/createMessage`, `elicitation/create` requests | replaced by MRTR | MW-HTTP-008 |
+| Server initiated `roots/list`, `sampling/createMessage`, `elicitation/create` requests | replaced by MRTR | MS-HTTP-008 |
 | `notifications/elicitation/complete` or `elicitationId` | removed | Key Changes minor change 11 |
-| List handler returning no `ttlMs` or `cacheScope` | required by CacheableResult | MW-CACHE-001 |
-| Result returned without `resultType` | required field | MW-RES-001 |
-| No `server/discover` handler | required RPC | MW-LIFE-001 |
-| Error code `-32002` for resource not found | renumbered to `-32602` | MW-ERR-005 |
-| Error codes `-32001`, `-32003`, `-32004` | renumbered to `-32020`, `-32021`, `-32022` | MW-ERR-003 |
-| Hand rolled SSE framing | transport shape changed | MW-HTTP-007 |
+| List handler returning no `ttlMs` or `cacheScope` | required by CacheableResult | MS-CACHE-001 |
+| Result returned without `resultType` | required field | MS-RES-001 |
+| No `server/discover` handler | required RPC | MS-LIFE-001 |
+| Error code `-32002` for resource not found | renumbered to `-32602` | MS-ERR-005 |
+| Error codes `-32001`, `-32003`, `-32004` | renumbered to `-32020`, `-32021`, `-32022` | MS-ERR-003 |
+| Hand rolled SSE framing | transport shape changed | MS-HTTP-007 |
 
 ## Open questions
 

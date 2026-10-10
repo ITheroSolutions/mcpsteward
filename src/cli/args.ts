@@ -108,7 +108,7 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
 
     if (!FLAGS_WITH_VALUES.has(name) && !BOOLEAN_FLAGS.has(name)) {
       throw new ConfigurationError(
-        `Unknown option ${name}. Run mcpwarden --help to see available options.`,
+        `Unknown option ${name}. Run mcpsteward --help to see available options.`,
         { details: { flag: name } },
       );
     }

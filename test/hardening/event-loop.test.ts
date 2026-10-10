@@ -8,7 +8,7 @@
  * still awaiting the promise that timer was supposed to settle.
  *
  * Under vitest the timer always fires, because the runner is alive. In a bare
- * CLI process it never does. `mcpwarden conform <a server that dies on spawn>`
+ * CLI process it never does. `mcpsteward conform <a server that dies on spawn>`
  * exited with code 13, ERR_UNSETTLED_TOP_LEVEL_AWAIT, printing no finding, no
  * error and no explanation.
  *
@@ -51,7 +51,7 @@ beforeAll(async () => {
  * test pass for a reason that had nothing to do with the defect.
  */
 async function runBare(source: string): Promise<{ code: number; stdout: string; stderr: string }> {
-  const dir = await mkdtemp(join(tmpdir(), 'mcpwarden-loop-'));
+  const dir = await mkdtemp(join(tmpdir(), 'mcpsteward-loop-'));
   const script = join(dir, 'probe.mjs');
 
   try {

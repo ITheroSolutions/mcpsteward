@@ -11,7 +11,7 @@ import { McpClient } from '../../src/protocol/client.js';
 import { StdioTransport } from '../../src/protocol/stdio-transport.js';
 
 /**
- * mcpwarden grading its own MCP server.
+ * mcpsteward grading its own MCP server.
  *
  * This is the strongest credibility signal the package can offer,
  * and it is right: a tool that grades MCP servers and cannot pass its own grader
@@ -50,8 +50,8 @@ afterEach(async () => {
 });
 
 const SELF: ServerRef = {
-  id: 'mcpwarden-self',
-  name: 'mcpwarden',
+  id: 'mcpsteward-self',
+  name: 'mcpsteward',
   endpoint: { transport: 'stdio', command: 'node', args: [SERVER], envNames: [] },
   authPosture: 'none',
   registrations: [],
@@ -71,7 +71,7 @@ function connect(): McpClient {
   return client;
 }
 
-describe('mcpwarden grades its own MCP server', () => {
+describe('mcpsteward grades its own MCP server', () => {
   it('reaches grade A against its own conformance engine', async () => {
     const captured = await connect().capture(SELF, 'stdio');
     const report = grade(captured);
@@ -100,7 +100,7 @@ describe('protocol behaviour', () => {
     expect(outcome.implemented).toBe(true);
     expect(outcome.supportedVersions).toEqual(['2026-07-28']);
     expect(outcome.capabilities).toHaveProperty('tools');
-    expect(outcome.serverInfo).toMatchObject({ name: 'mcpwarden' });
+    expect(outcome.serverInfo).toMatchObject({ name: 'mcpsteward' });
   }, 30_000);
 
   it('rejects a version it does not support, naming what it does', async () => {

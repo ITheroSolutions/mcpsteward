@@ -34,7 +34,7 @@ function sample(overrides: Partial<Parameters<typeof buildReport>[0]> = {}): Rep
         emptyMessage: 'No findings.',
         items: [
           {
-            id: 'MW-LIFE-001',
+            id: 'MS-LIFE-001',
             title: 'server/discover is implemented',
             severity: 'critical',
             detail: 'server/discover answered method not found.',
@@ -43,7 +43,7 @@ function sample(overrides: Partial<Parameters<typeof buildReport>[0]> = {}): Rep
             locus: 'server/discover',
           },
           {
-            id: 'MW-CACHE-002',
+            id: 'MS-CACHE-002',
             title: 'ttlMs is a non negative integer',
             severity: 'medium',
             detail: 'One result carried a negative ttlMs.',
@@ -66,7 +66,7 @@ describe('every format renders', () => {
     });
 
     it(`includes the finding id in ${format}`, () => {
-      expect(render(sample(), format)).toContain('MW-LIFE-001');
+      expect(render(sample(), format)).toContain('MS-LIFE-001');
     });
   }
 
@@ -89,7 +89,7 @@ describe('redaction reaches every renderer', () => {
         emptyMessage: `none for ${SECRETS.anthropic}`,
         items: [
           {
-            id: 'MW-TEST-001',
+            id: 'MS-TEST-001',
             title: `tool leaking ${SECRETS.github}`,
             severity: 'critical',
             detail: `The server sent ${SECRETS.anthropic} in a description.`,
@@ -155,14 +155,14 @@ describe('determinism', () => {
           emptyMessage: 'No findings.',
           items: [
             {
-              id: 'MW-CACHE-002',
+              id: 'MS-CACHE-002',
               title: 'ttlMs is a non negative integer',
               severity: 'medium',
               detail: 'One result carried a negative ttlMs.',
               location: { file: 'src/handlers.ts', line: 42 },
             },
             {
-              id: 'MW-LIFE-001',
+              id: 'MS-LIFE-001',
               title: 'server/discover is implemented',
               severity: 'critical',
               detail: 'server/discover answered method not found.',
@@ -270,7 +270,7 @@ describe('sarif', () => {
     };
 
     expect(sarif.version).toBe('2.1.0');
-    expect(sarif.runs[0]?.tool.driver.name).toBe('mcpwarden');
+    expect(sarif.runs[0]?.tool.driver.name).toBe('mcpsteward');
     expect(sarif.runs[0]?.tool.driver.rules.length).toBeGreaterThan(0);
   });
 
@@ -282,7 +282,7 @@ describe('sarif', () => {
       }[];
     };
 
-    const withLocation = sarif.runs[0]?.results.find((r) => r.ruleId === 'MW-CACHE-002');
+    const withLocation = sarif.runs[0]?.results.find((r) => r.ruleId === 'MS-CACHE-002');
     expect(withLocation?.locations[0]).toHaveProperty('physicalLocation');
   });
 
@@ -292,7 +292,7 @@ describe('sarif', () => {
       runs: { results: { ruleId: string }[] }[];
     };
 
-    expect(sarif.runs[0]?.results.map((r) => r.ruleId)).toContain('MW-LIFE-001');
+    expect(sarif.runs[0]?.results.map((r) => r.ruleId)).toContain('MS-LIFE-001');
   });
 
   it('maps five severities onto the four SARIF levels', () => {
@@ -301,8 +301,8 @@ describe('sarif', () => {
     };
 
     const levels = new Map(sarif.runs[0]?.results.map((r) => [r.ruleId, r.level]));
-    expect(levels.get('MW-LIFE-001')).toBe('error');
-    expect(levels.get('MW-CACHE-002')).toBe('warning');
+    expect(levels.get('MS-LIFE-001')).toBe('error');
+    expect(levels.get('MS-CACHE-002')).toBe('warning');
   });
 });
 

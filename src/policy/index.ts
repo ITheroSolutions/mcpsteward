@@ -23,7 +23,7 @@
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
-import { ConfigurationError, toMcpWardenError } from '../core/errors.js';
+import { ConfigurationError, toMcpStewardError } from '../core/errors.js';
 import { redact } from '../core/redaction.js';
 import {
   assertNever,
@@ -168,7 +168,7 @@ export function checkPolicy(policy: Policy, input: PolicyInput): PolicyResult {
             'server-unpinned',
             server,
             `${describe(server)} has never been approved, so there is no baseline to detect changes against.`,
-            `Review what it advertises, then pin it with: mcpwarden trust ${server.name}`,
+            `Review what it advertises, then pin it with: mcpsteward trust ${server.name}`,
             'medium',
           ),
         );
@@ -186,7 +186,7 @@ export function checkPolicy(policy: Policy, input: PolicyInput): PolicyResult {
             'grade-below-minimum',
             server,
             `${describe(server)} was not graded, so it cannot meet the required minimum of ${policy.minimumGrade}. ${grade.reason ?? ''}`.trim(),
-            `Run: mcpwarden conform ${server.name} to see why.`,
+            `Run: mcpsteward conform ${server.name} to see why.`,
             'high',
           ),
         );
@@ -196,7 +196,7 @@ export function checkPolicy(policy: Policy, input: PolicyInput): PolicyResult {
             'grade-below-minimum',
             server,
             `${describe(server)} graded ${grade.letter} (${String(grade.score)} out of 100) against a required minimum of ${policy.minimumGrade}. ${String(grade.mustFailed)} mandatory requirement(s) failed.`,
-            `Run: mcpwarden conform ${server.name} to see each failure with its specification citation and remediation.`,
+            `Run: mcpsteward conform ${server.name} to see each failure with its specification citation and remediation.`,
             'high',
           ),
         );
@@ -213,7 +213,7 @@ export function checkPolicy(policy: Policy, input: PolicyInput): PolicyResult {
             'drift-risk-exceeded',
             server,
             `${describe(server)} has drifted from its approved surface with ${worst} risk, above the permitted maximum of ${policy.maximumDriftRisk}. ${String(drift.events.length)} change(s) detected.`,
-            `Run: mcpwarden diff ${server.name} to see every change. If the changes are expected, re-pin with: mcpwarden trust ${server.name}`,
+            `Run: mcpsteward diff ${server.name} to see every change. If the changes are expected, re-pin with: mcpsteward trust ${server.name}`,
             'critical',
           ),
         );
@@ -425,7 +425,7 @@ export async function loadPolicy(path: string): Promise<Policy> {
   try {
     text = await readFile(path, 'utf8');
   } catch (error) {
-    throw toMcpWardenError(error, `reading the policy at ${path}`);
+    throw toMcpStewardError(error, `reading the policy at ${path}`);
   }
 
   return parsePolicy(text, path);
@@ -491,7 +491,7 @@ export const EXIT_CODES = {
   policyFailure: 1,
   /** The command was used incorrectly. */
   usageError: 2,
-  /** A defect in mcpwarden. */
+  /** A defect in mcpsteward. */
   internalError: 3,
 } as const;
 

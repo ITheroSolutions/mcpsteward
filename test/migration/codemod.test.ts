@@ -16,7 +16,7 @@ import {
 let root: string;
 
 beforeEach(async () => {
-  root = await mkdtemp(join(tmpdir(), 'mcpwarden-codemod-'));
+  root = await mkdtemp(join(tmpdir(), 'mcpsteward-codemod-'));
 });
 
 afterEach(async () => {

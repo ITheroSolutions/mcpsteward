@@ -142,7 +142,7 @@ function render() {
   lines.push('');
   lines.push(
     'Patterns in MCP server source that break under 2026-07-28. Detected by ' +
-      '`mcpwarden migrate <path>`. Each traces to a rule above or to the SEP that ' +
+      '`mcpsteward migrate <path>`. Each traces to a rule above or to the SEP that ' +
       'introduced the change.',
   );
   lines.push('');

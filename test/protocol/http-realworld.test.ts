@@ -1,7 +1,7 @@
 /**
  * HTTP behaviour against servers shaped like the real ones.
  *
- * Pointing mcpwarden at a real machine for the first time captured one HTTP server
+ * Pointing mcpsteward at a real machine for the first time captured one HTTP server
  * out of twelve. Every failure below was observed there, and each test fails
  * against the code as it was:
  *

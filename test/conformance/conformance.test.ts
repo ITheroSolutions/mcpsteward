@@ -29,7 +29,7 @@ async function captureMode(mode: string): Promise<CaptureResult> {
   const transport = new StdioTransport({
     command: process.execPath,
     args: [FIXTURE],
-    env: { MCPWARDEN_FIXTURE_MODE: mode },
+    env: { MCPSTEWARD_FIXTURE_MODE: mode },
   });
   transport.start();
 
@@ -74,15 +74,15 @@ describe('registry integrity', () => {
     }
   });
 
-  it('uses the MW-AREA-NNN id convention', () => {
+  it('uses the MS-AREA-NNN id convention', () => {
     for (const rule of allRules()) {
-      expect(rule.id).toMatch(/^MW-[A-Z]+-\d{3}$/);
+      expect(rule.id).toMatch(/^MS-[A-Z]+-\d{3}$/);
     }
   });
 
   it('looks a rule up by id', () => {
-    expect(ruleById('MW-LIFE-001')?.rule.title).toContain('server/discover');
-    expect(ruleById('MW-NOPE-999')).toBeUndefined();
+    expect(ruleById('MS-LIFE-001')?.rule.title).toContain('server/discover');
+    expect(ruleById('MS-NOPE-999')).toBeUndefined();
   });
 });
 
@@ -121,20 +121,20 @@ const RULE_FIXTURES: readonly {
   readonly passingMode: string;
   readonly failingMode: string;
 }[] = [
-  { ruleId: 'MW-LIFE-001', passingMode: 'conforming', failingMode: 'no-discover' },
-  { ruleId: 'MW-LIFE-003', passingMode: 'conforming', failingMode: 'no-server-info' },
-  { ruleId: 'MW-RES-001', passingMode: 'conforming', failingMode: 'no-result-type' },
-  { ruleId: 'MW-RES-002', passingMode: 'conforming', failingMode: 'bad-result-type' },
-  { ruleId: 'MW-CACHE-001', passingMode: 'conforming', failingMode: 'no-cache-metadata' },
-  { ruleId: 'MW-CACHE-002', passingMode: 'conforming', failingMode: 'negative-ttl' },
-  { ruleId: 'MW-CACHE-003', passingMode: 'conforming', failingMode: 'bad-cache-scope' },
-  { ruleId: 'MW-TOOL-001', passingMode: 'conforming', failingMode: 'bad-header-number' },
-  { ruleId: 'MW-TOOL-004', passingMode: 'conforming', failingMode: 'remote-ref' },
-  { ruleId: 'MW-ICON-001', passingMode: 'conforming', failingMode: 'unsafe-icon' },
+  { ruleId: 'MS-LIFE-001', passingMode: 'conforming', failingMode: 'no-discover' },
+  { ruleId: 'MS-LIFE-003', passingMode: 'conforming', failingMode: 'no-server-info' },
+  { ruleId: 'MS-RES-001', passingMode: 'conforming', failingMode: 'no-result-type' },
+  { ruleId: 'MS-RES-002', passingMode: 'conforming', failingMode: 'bad-result-type' },
+  { ruleId: 'MS-CACHE-001', passingMode: 'conforming', failingMode: 'no-cache-metadata' },
+  { ruleId: 'MS-CACHE-002', passingMode: 'conforming', failingMode: 'negative-ttl' },
+  { ruleId: 'MS-CACHE-003', passingMode: 'conforming', failingMode: 'bad-cache-scope' },
+  { ruleId: 'MS-TOOL-001', passingMode: 'conforming', failingMode: 'bad-header-number' },
+  { ruleId: 'MS-TOOL-004', passingMode: 'conforming', failingMode: 'remote-ref' },
+  { ruleId: 'MS-ICON-001', passingMode: 'conforming', failingMode: 'unsafe-icon' },
   // A server declaring no extensions reports not applicable rather than passing,
   // so the passing case needs a server that declares a correctly prefixed one.
-  { ruleId: 'MW-EXT-001', passingMode: 'prefixed-extension', failingMode: 'unprefixed-extension' },
-  { ruleId: 'MW-DEP-001', passingMode: 'conforming', failingMode: 'deprecated-capabilities' },
+  { ruleId: 'MS-EXT-001', passingMode: 'prefixed-extension', failingMode: 'unprefixed-extension' },
+  { ruleId: 'MS-DEP-001', passingMode: 'conforming', failingMode: 'deprecated-capabilities' },
 ];
 
 describe('each rule has a passing and a failing fixture', () => {
@@ -151,10 +151,10 @@ describe('each rule has a passing and a failing fixture', () => {
   }
 
   it('covers every rule that can be graded from a capture', () => {
-    // MW-LIFE-002 and MW-TOOL-002 and MW-TOOL-003 are covered separately below,
+    // MS-LIFE-002 and MS-TOOL-002 and MS-TOOL-003 are covered separately below,
     // because their failing conditions are not reachable through a fixture mode.
     const covered = new Set(RULE_FIXTURES.map((f) => f.ruleId));
-    const separately = new Set(['MW-LIFE-002', 'MW-LIFE-007', 'MW-TOOL-002', 'MW-TOOL-003', 'MW-CACHE-004']);
+    const separately = new Set(['MS-LIFE-002', 'MS-LIFE-007', 'MS-TOOL-002', 'MS-TOOL-003', 'MS-CACHE-004']);
 
     const uncovered = allRules()
       .map((r) => r.id)
@@ -168,17 +168,17 @@ describe('x-mcp-header validation', () => {
   it('rejects an annotation on a number typed parameter', async () => {
     // A number has no canonical header encoding, which is why the specification
     // permits only string, integer and boolean.
-    expect(await outcomeOf('bad-header-number', 'MW-TOOL-001')).toBe('fail');
+    expect(await outcomeOf('bad-header-number', 'MS-TOOL-001')).toBe('fail');
   });
 
   it('rejects an annotation that is not statically reachable', async () => {
     // Buried under anyOf, so a client cannot extract it by walking properties.
-    expect(await outcomeOf('bad-header-unreachable', 'MW-TOOL-001')).toBe('fail');
+    expect(await outcomeOf('bad-header-unreachable', 'MS-TOOL-001')).toBe('fail');
   });
 
   it('rejects two parameters claiming the same header name', async () => {
     // Header names are case insensitive, so one would silently win.
-    expect(await outcomeOf('bad-header-duplicate', 'MW-TOOL-001')).toBe('fail');
+    expect(await outcomeOf('bad-header-duplicate', 'MS-TOOL-001')).toBe('fail');
   });
 
   it('reports not applicable when a server advertises no tools', () => {
@@ -190,7 +190,7 @@ describe('x-mcp-header validation', () => {
       evidence: emptyEvidence(),
     };
 
-    const result = grade(context).results.find((r) => r.ruleId === 'MW-TOOL-001');
+    const result = grade(context).results.find((r) => r.ruleId === 'MS-TOOL-001');
     expect(result?.outcome).toBe('not-applicable');
   });
 });
@@ -248,7 +248,7 @@ describe('grading arithmetic', () => {
 describe('findings', () => {
   it('carries the citation and remediation a developer needs', async () => {
     const report = grade(await captureMode('no-discover'));
-    const finding = report.findings.find((f) => f.ruleId === 'MW-LIFE-001');
+    const finding = report.findings.find((f) => f.ruleId === 'MS-LIFE-001');
 
     expect(finding).toBeDefined();
     expect(finding?.citation.section).toContain('versioning');

@@ -73,7 +73,7 @@ export function merkleNode(left: ContentHash, right: ContentHash): ContentHash {
  * Order is significant and is the caller's responsibility. Surface roots sort
  * descriptors by identity first, so that a server returning its tools in a
  * different order does not register as drift. The specification only *recommends*
- * deterministic ordering from `tools/list` (MW-TOOL-002, a SHOULD), so a
+ * deterministic ordering from `tools/list` (MS-TOOL-002, a SHOULD), so a
  * conforming server may legitimately reorder between calls and the trust layer
  * must not treat that as a change.
  */

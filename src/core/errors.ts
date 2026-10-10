@@ -55,7 +55,7 @@ export type ErrorCode = (typeof ERROR_CODES)[number];
 /** Structured, JSON safe detail attached to an error. */
 export type ErrorDetails = Readonly<Record<string, unknown>>;
 
-export interface McpWardenErrorOptions {
+export interface McpStewardErrorOptions {
   /** Structured context. Every string inside is redacted. */
   readonly details?: ErrorDetails;
   /** The underlying cause, preserved for stack traces but never rendered raw. */
@@ -71,11 +71,11 @@ export interface McpWardenErrorOptions {
  * construct one of these carrying an unredacted secret, which is the point: the
  * guarantee holds even when a future caller forgets it exists.
  */
-export class McpWardenError extends Error {
+export class McpStewardError extends Error {
   readonly code: ErrorCode;
   readonly details: ErrorDetails;
 
-  constructor(code: ErrorCode, message: string, options: McpWardenErrorOptions = {}) {
+  constructor(code: ErrorCode, message: string, options: McpStewardErrorOptions = {}) {
     // Redaction happens here rather than at render time so that a message which
     // escapes through an unexpected path, an uncaught throw printed by Node for
     // instance, is already safe.
@@ -122,7 +122,7 @@ export class McpWardenError extends Error {
 
 function describeCause(cause: unknown): string | undefined {
   if (cause === undefined || cause === null) return undefined;
-  if (cause instanceof McpWardenError) return `${cause.code}: ${cause.message}`;
+  if (cause instanceof McpStewardError) return `${cause.code}: ${cause.message}`;
   if (cause instanceof Error) return redact(`${cause.name}: ${cause.message}`);
   return redact(describeUnknown(cause));
 }
@@ -164,8 +164,8 @@ function describeUnknown(value: unknown): string {
 }
 
 /** A transport could not be established, or died mid exchange. */
-export class TransportError extends McpWardenError {
-  constructor(message: string, options?: McpWardenErrorOptions) {
+export class TransportError extends McpStewardError {
+  constructor(message: string, options?: McpStewardErrorOptions) {
     super('TRANSPORT_FAILURE', message, options);
   }
 }
@@ -178,10 +178,10 @@ export class TransportError extends McpWardenError {
  * answered clearly, so retrying cannot change the outcome, and reporting it as a
  * transport failure sent people looking for a network problem that did not
  * exist. Most hosted MCP servers behave this way, so it is the single most
- * common result of pointing mcpwarden at a real machine.
+ * common result of pointing mcpsteward at a real machine.
  */
-export class AuthenticationRequiredError extends McpWardenError {
-  constructor(message: string, options?: McpWardenErrorOptions) {
+export class AuthenticationRequiredError extends McpStewardError {
+  constructor(message: string, options?: McpStewardErrorOptions) {
     super('AUTHENTICATION_REQUIRED', message, options);
   }
 }
@@ -193,29 +193,29 @@ export class AuthenticationRequiredError extends McpWardenError {
  * observation this package is designed to make and report. A protocol violation is
  * a response so malformed that the exchange cannot continue.
  */
-export class ProtocolViolationError extends McpWardenError {
-  constructor(message: string, options?: McpWardenErrorOptions) {
+export class ProtocolViolationError extends McpStewardError {
+  constructor(message: string, options?: McpStewardErrorOptions) {
     super('PROTOCOL_VIOLATION', message, options);
   }
 }
 
 /** No mutually supported protocol revision exists. */
-export class VersionNegotiationError extends McpWardenError {
-  constructor(message: string, options?: McpWardenErrorOptions) {
+export class VersionNegotiationError extends McpStewardError {
+  constructor(message: string, options?: McpStewardErrorOptions) {
     super('VERSION_NEGOTIATION_FAILED', message, options);
   }
 }
 
 /** The revision is recognised but this package does not implement it. */
-export class UnsupportedRevisionError extends McpWardenError {
-  constructor(message: string, options?: McpWardenErrorOptions) {
+export class UnsupportedRevisionError extends McpStewardError {
+  constructor(message: string, options?: McpStewardErrorOptions) {
     super('UNSUPPORTED_REVISION', message, options);
   }
 }
 
 /** Locating or parsing MCP client configuration failed. */
-export class DiscoveryError extends McpWardenError {
-  constructor(message: string, options?: McpWardenErrorOptions) {
+export class DiscoveryError extends McpStewardError {
+  constructor(message: string, options?: McpStewardErrorOptions) {
     super('DISCOVERY_FAILURE', message, options);
   }
 }
@@ -226,29 +226,29 @@ export class DiscoveryError extends McpWardenError {
  * Carries the exact sequence number where integrity fails, because "your ledger is
  * corrupt" is not actionable and "entry 41 does not chain to entry 40" is.
  */
-export class LedgerCorruptionError extends McpWardenError {
-  constructor(message: string, options?: McpWardenErrorOptions) {
+export class LedgerCorruptionError extends McpStewardError {
+  constructor(message: string, options?: McpStewardErrorOptions) {
     super('LEDGER_CORRUPTION', message, options);
   }
 }
 
 /** A policy rule was violated. */
-export class PolicyViolationError extends McpWardenError {
-  constructor(message: string, options?: McpWardenErrorOptions) {
+export class PolicyViolationError extends McpStewardError {
+  constructor(message: string, options?: McpStewardErrorOptions) {
     super('POLICY_VIOLATION', message, options);
   }
 }
 
 /** Configuration was invalid. Names the offending key in `details.key`. */
-export class ConfigurationError extends McpWardenError {
-  constructor(message: string, options?: McpWardenErrorOptions) {
+export class ConfigurationError extends McpStewardError {
+  constructor(message: string, options?: McpStewardErrorOptions) {
     super('CONFIGURATION_INVALID', message, options);
   }
 }
 
 /** An operation exceeded its time budget. */
-export class TimeoutError extends McpWardenError {
-  constructor(message: string, options?: McpWardenErrorOptions) {
+export class TimeoutError extends McpStewardError {
+  constructor(message: string, options?: McpStewardErrorOptions) {
     super('TIMEOUT', message, options);
   }
 }
@@ -260,22 +260,22 @@ export class TimeoutError extends McpWardenError {
  * cancellation is the caller changing their mind. Callers routinely want to treat
  * the two differently, and a CLI should report only one of them as a failure.
  */
-export class CancellationError extends McpWardenError {
-  constructor(message = 'Operation was cancelled', options?: McpWardenErrorOptions) {
+export class CancellationError extends McpStewardError {
+  constructor(message = 'Operation was cancelled', options?: McpStewardErrorOptions) {
     super('CANCELLED', message, options);
   }
 }
 
 /** A defect in this package. */
-export class InternalError extends McpWardenError {
-  constructor(message: string, options?: McpWardenErrorOptions) {
+export class InternalError extends McpStewardError {
+  constructor(message: string, options?: McpStewardErrorOptions) {
     super('INTERNAL', message, options);
   }
 }
 
 /** Narrow an unknown caught value to this package's error type. */
-export function isMcpWardenError(value: unknown): value is McpWardenError {
-  return value instanceof McpWardenError;
+export function isMcpStewardError(value: unknown): value is McpStewardError {
+  return value instanceof McpStewardError;
 }
 
 /**
@@ -285,7 +285,7 @@ export function isMcpWardenError(value: unknown): value is McpWardenError {
  * whether a cancellation should be reported as a failure.
  */
 export function hasErrorCode(value: unknown, code: ErrorCode): boolean {
-  return isMcpWardenError(value) && value.code === code;
+  return isMcpStewardError(value) && value.code === code;
 }
 
 /**
@@ -295,8 +295,8 @@ export function hasErrorCode(value: unknown, code: ErrorCode): boolean {
  * Every `catch` that cannot handle a value should funnel through here rather than
  * rethrowing raw, so nothing escapes the taxonomy or the redaction guarantee.
  */
-export function toMcpWardenError(value: unknown, context: string): McpWardenError {
-  if (isMcpWardenError(value)) return value;
+export function toMcpStewardError(value: unknown, context: string): McpStewardError {
+  if (isMcpStewardError(value)) return value;
 
   const description = value instanceof Error ? value.message : describeUnknown(value);
   return new InternalError(`${context}: ${description}`, { cause: value });

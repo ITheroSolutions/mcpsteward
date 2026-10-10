@@ -1,5 +1,5 @@
 /**
- * Consume mcpwarden from another tool.
+ * Consume mcpsteward from another tool.
  *
  * Shows the pieces a host application actually needs: a session it controls, its
  * own logger, cancellation it owns, and a report rendered into whichever format
@@ -10,8 +10,8 @@
 
 import { fileURLToPath } from 'node:url';
 
-import { ServerSession, withServer } from '@itherosolutions/mcpwarden/api';
-import { buildReport, createLogger, grade, render } from '@itherosolutions/mcpwarden';
+import { ServerSession, withServer } from 'mcpsteward/api';
+import { buildReport, createLogger, grade, render } from 'mcpsteward';
 
 // A server this example controls, so the script is runnable with no setup and
 // never touches anything real.
@@ -26,7 +26,7 @@ const server = {
     transport: 'stdio',
     command: process.execPath,
     args: [FIXTURE],
-    envNames: ['MCPWARDEN_FIXTURE_MODE'],
+    envNames: ['MCPSTEWARD_FIXTURE_MODE'],
   },
   authPosture: 'none',
   registrations: [],
@@ -52,7 +52,7 @@ try {
     {
       logger,
       signal: controller.signal,
-      env: { MCPWARDEN_FIXTURE_MODE: 'conforming' },
+      env: { MCPSTEWARD_FIXTURE_MODE: 'conforming' },
       onProgress: (event) => logger.info(`captured ${event.stage}`, { count: event.received }),
     },
   );
@@ -93,7 +93,7 @@ try {
 // A separate session, to show that dispose is idempotent and that using a session
 // after disposal fails loudly rather than silently.
 const session = ServerSession.open(server, {
-  env: { MCPWARDEN_FIXTURE_MODE: 'conforming' },
+  env: { MCPSTEWARD_FIXTURE_MODE: 'conforming' },
 });
 
 await session.dispose();

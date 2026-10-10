@@ -198,7 +198,7 @@ describe('computeSurfaceHashes', () => {
 
   it('is insensitive to the order the server returned descriptors in', () => {
     // The specification only recommends deterministic ordering from tools/list
-    // (MW-TOOL-002 is a SHOULD), so a conforming server may reorder between
+    // (MS-TOOL-002 is a SHOULD), so a conforming server may reorder between
     // calls. Treating that as drift would produce constant false alarms.
     const forward = computeSurfaceHashes([...tools, ...prompts]);
     const reversed = computeSurfaceHashes([...prompts, ...tools].reverse());

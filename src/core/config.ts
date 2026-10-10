@@ -3,10 +3,10 @@
  *
  * Precedence, lowest to highest:
  *
- * 1. **Built in defaults.** Everything has one, so mcpwarden runs with no
+ * 1. **Built in defaults.** Everything has one, so mcpsteward runs with no
  *    configuration at all.
- * 2. **Configuration file.** `mcpwarden.config.json`, or a path given explicitly.
- * 3. **Environment.** `MCPWARDEN_*` variables.
+ * 2. **Configuration file.** `mcpsteward.config.json`, or a path given explicitly.
+ * 3. **Environment.** `MCPSTEWARD_*` variables.
  * 4. **Per call overrides.** What the caller passed to this specific operation.
  *
  * Later wins. A value set in two places is not an error; the higher precedence one
@@ -21,7 +21,7 @@ import { ConfigurationError } from './errors.js';
 import { isLogLevel, type LogLevel } from './logger.js';
 import { isSupportedRevision, TARGET_REVISION, type ProtocolRevision } from './revisions.js';
 
-export interface McpWardenConfig {
+export interface McpStewardConfig {
   /** Per operation time budget in milliseconds. */
   readonly timeoutMs: number;
   /** Attempts after the first, for retryable transport failures. */
@@ -43,7 +43,7 @@ export interface McpWardenConfig {
   readonly maxResponseBytes: number;
 }
 
-export const DEFAULT_CONFIG: McpWardenConfig = {
+export const DEFAULT_CONFIG: McpStewardConfig = {
   timeoutMs: 30_000,
   retries: 2,
   retryBackoffMs: 250,
@@ -59,14 +59,14 @@ export const DEFAULT_CONFIG: McpWardenConfig = {
 };
 
 /** A partial configuration from any one source. */
-export type ConfigOverrides = Partial<McpWardenConfig>;
+export type ConfigOverrides = Partial<McpStewardConfig>;
 
-const ENV_PREFIX = 'MCPWARDEN_';
+const ENV_PREFIX = 'MCPSTEWARD_';
 
 /**
  * Read configuration from environment variables.
  *
- * Only recognised keys are read. An unrecognised `MCPWARDEN_*` variable is ignored
+ * Only recognised keys are read. An unrecognised `MCPSTEWARD_*` variable is ignored
  * rather than rejected, because failing a whole run over a stale variable somebody
  * exported months ago helps nobody.
  */
@@ -169,7 +169,7 @@ function requireOptionalString(value: unknown, key: string): string | undefined 
  * Runs after merging rather than per source, so that a low precedence bad value
  * overridden by a good one does not fail the run.
  */
-export function validateConfig(candidate: ConfigOverrides): McpWardenConfig {
+export function validateConfig(candidate: ConfigOverrides): McpStewardConfig {
   const merged = { ...DEFAULT_CONFIG, ...candidate };
 
   const revision = merged.preferredRevision;
@@ -217,7 +217,7 @@ export interface ResolveConfigInput {
  * Sources are merged in documented precedence order and the result is validated
  * once, as a whole.
  */
-export function resolveConfig(input: ResolveConfigInput = {}): McpWardenConfig {
+export function resolveConfig(input: ResolveConfigInput = {}): McpStewardConfig {
   const fromEnv = input.env === undefined ? {} : configFromEnv(input.env);
 
   return validateConfig({

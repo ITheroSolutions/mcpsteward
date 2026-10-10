@@ -11,7 +11,7 @@ import { knownClients } from '../../src/discovery/clients.js';
 let root: string;
 
 beforeEach(async () => {
-  root = await mkdtemp(join(tmpdir(), 'mcpwarden-cli-'));
+  root = await mkdtemp(join(tmpdir(), 'mcpsteward-cli-'));
 });
 
 afterEach(async () => {
@@ -185,7 +185,7 @@ describe('stream discipline', () => {
   });
 
   it('keeps diagnostics off stdout even at trace level', async () => {
-    // This is the property that makes `mcpwarden ... --format json | jq` work.
+    // This is the property that makes `mcpsteward ... --format json | jq` work.
     const result = await cli(['discover', '--format', 'json', '--log-level', 'trace']);
 
     expect(() => {
@@ -314,7 +314,7 @@ describe('policy and verify', () => {
     const result = await cli(['verify', '--policy', join(root, 'absent.json')]);
 
     expect(result.code).toBe(2);
-    expect(result.stderr).toContain('mcpwarden policy init');
+    expect(result.stderr).toContain('mcpsteward policy init');
   });
 
   it('generates a policy with policy init', async () => {

@@ -6,13 +6,13 @@
  * published SDK implements this revision. Everything it does is traceable to a
  * requirement in SPEC-NOTES.md.
  *
- * Behaviour can be varied through MCPWARDEN_FIXTURE_MODE so that one file can act
+ * Behaviour can be varied through MCPSTEWARD_FIXTURE_MODE so that one file can act
  * as both the correct server and several specifically broken ones.
  */
 
 import { createInterface } from 'node:readline';
 
-const MODE = process.env.MCPWARDEN_FIXTURE_MODE ?? 'conforming';
+const MODE = process.env.MCPSTEWARD_FIXTURE_MODE ?? 'conforming';
 const REVISION = '2026-07-28';
 
 const TOOLS = [
@@ -49,7 +49,7 @@ const TOOLS = [
  * passing one.
  */
 const BROKEN_TOOLS = {
-  // MW-TOOL-001: x-mcp-header on a number typed parameter, which the
+  // MS-TOOL-001: x-mcp-header on a number typed parameter, which the
   // specification forbids because a number has no canonical header encoding.
   'bad-header-number': {
     name: 'bad_header_number',
@@ -60,7 +60,7 @@ const BROKEN_TOOLS = {
     },
   },
 
-  // MW-TOOL-001: annotation buried under a composition keyword, so it is not
+  // MS-TOOL-001: annotation buried under a composition keyword, so it is not
   // statically reachable through properties keys alone.
   'bad-header-unreachable': {
     name: 'bad_header_unreachable',
@@ -75,7 +75,7 @@ const BROKEN_TOOLS = {
     },
   },
 
-  // MW-TOOL-001: two parameters claiming the same header name, differing only
+  // MS-TOOL-001: two parameters claiming the same header name, differing only
   // in case. Header names are case insensitive, so one would silently win.
   'bad-header-duplicate': {
     name: 'bad_header_duplicate',
@@ -89,7 +89,7 @@ const BROKEN_TOOLS = {
     },
   },
 
-  // MW-TOOL-004: a $ref pointing at a network URI, which every client is
+  // MS-TOOL-004: a $ref pointing at a network URI, which every client is
   // forbidden from dereferencing automatically.
   'remote-ref': {
     name: 'remote_ref',
@@ -100,7 +100,7 @@ const BROKEN_TOOLS = {
     },
   },
 
-  // MW-ICON-001: an icon using a scheme clients must reject.
+  // MS-ICON-001: an icon using a scheme clients must reject.
   'unsafe-icon': {
     name: 'unsafe_icon',
     description: 'Advertises a javascript icon.',
@@ -116,7 +116,7 @@ const RESOURCES = [
 ];
 
 function cacheable(body) {
-  // MW-CACHE-001: results from these operations must carry caching hints.
+  // MS-CACHE-001: results from these operations must carry caching hints.
   if (MODE === 'no-cache-metadata') return body;
   if (MODE === 'negative-ttl') return { ...body, ttlMs: -1, cacheScope: 'public' };
   if (MODE === 'bad-cache-scope') return { ...body, ttlMs: 60000, cacheScope: 'shared' };
@@ -124,9 +124,9 @@ function cacheable(body) {
 }
 
 function complete(body) {
-  // MW-RES-001: every result carries resultType.
+  // MS-RES-001: every result carries resultType.
   if (MODE === 'no-result-type') return body;
-  // MW-RES-002: only defined values may be used.
+  // MS-RES-002: only defined values may be used.
   if (MODE === 'bad-result-type') return { resultType: 'finished', ...body };
   return { resultType: 'complete', ...body };
 }
@@ -141,15 +141,15 @@ function toolsFor(mode) {
 
 /** The capability set for the current mode. */
 function capabilitiesFor(mode) {
-  // MW-DEP-001: Roots, Sampling and Logging are deprecated.
+  // MS-DEP-001: Roots, Sampling and Logging are deprecated.
   if (mode === 'deprecated-capabilities') {
     return { tools: {}, prompts: {}, resources: {}, roots: {}, sampling: {}, logging: {} };
   }
-  // MW-EXT-001: an extension identifier without the mandatory prefix.
+  // MS-EXT-001: an extension identifier without the mandatory prefix.
   if (mode === 'unprefixed-extension') {
     return { tools: {}, prompts: {}, resources: {}, extensions: { mytasks: {} } };
   }
-  // MW-EXT-001 passing case. A server declaring no extensions at all reports
+  // MS-EXT-001 passing case. A server declaring no extensions at all reports
   // not applicable rather than passing, so proving the rule accepts a correct
   // identifier needs a server that actually declares one.
   if (mode === 'prefixed-extension') {
@@ -164,7 +164,7 @@ function capabilitiesFor(mode) {
 }
 
 function serverMeta() {
-  // MW-LIFE-004: servers SHOULD identify themselves in each result's _meta.
+  // MS-LIFE-004: servers SHOULD identify themselves in each result's _meta.
   if (MODE === 'no-server-info') return {};
   return {
     _meta: {
@@ -174,7 +174,7 @@ function serverMeta() {
 }
 
 function send(message) {
-  // MW-STDIO-001: one message per line, no embedded newlines.
+  // MS-STDIO-001: one message per line, no embedded newlines.
   process.stdout.write(JSON.stringify(message) + '\n');
 }
 
@@ -195,7 +195,7 @@ function handle(request) {
   const meta = readMeta(params);
   const requested = meta['io.modelcontextprotocol/protocolVersion'];
 
-  // MW-META-001: a request missing a required _meta field is malformed.
+  // MS-META-001: a request missing a required _meta field is malformed.
   if (MODE !== 'accepts-missing-meta') {
     if (requested === undefined) {
       respondError(id, -32602, 'Missing io.modelcontextprotocol/protocolVersion in _meta');
@@ -207,7 +207,7 @@ function handle(request) {
     }
   }
 
-  // MW-ERR-006: unsupported version returns -32022 with supported and requested.
+  // MS-ERR-006: unsupported version returns -32022 with supported and requested.
   if (requested !== undefined && requested !== REVISION && MODE !== 'accepts-any-version') {
     respondError(id, -32022, 'Unsupported protocol version', {
       supported: [REVISION],
@@ -218,7 +218,7 @@ function handle(request) {
 
   switch (method) {
     case 'server/discover': {
-      // MW-LIFE-001: servers MUST implement server/discover.
+      // MS-LIFE-001: servers MUST implement server/discover.
       if (MODE === 'no-discover') {
         respondError(id, -32601, 'Method not found');
         return;
@@ -228,7 +228,7 @@ function handle(request) {
         cacheable({
           supportedVersions: [REVISION],
           capabilities: capabilitiesFor(MODE),
-          instructions: 'A fixture server used only by the mcpwarden test suite.',
+          instructions: 'A fixture server used only by the mcpsteward test suite.',
         }),
       );
       return;
@@ -251,7 +251,7 @@ function handle(request) {
       return;
 
     case 'ping':
-      // MW-LIFE-007: ping was removed in this revision.
+      // MS-LIFE-007: ping was removed in this revision.
       if (MODE === 'implements-ping') {
         respond(id, {});
         return;
@@ -266,12 +266,12 @@ function handle(request) {
 
 // Behaviours that are about the process rather than about a message.
 if (MODE === 'writes-junk-to-stdout') {
-  // MW-STDIO-002 violation: non MCP output on stdout.
+  // MS-STDIO-002 violation: non MCP output on stdout.
   process.stdout.write('starting up, please wait\n');
 }
 
 if (MODE === 'noisy-stderr') {
-  // Entirely legitimate. MW-STDIO-003 says a client must not treat this as an error.
+  // Entirely legitimate. MS-STDIO-003 says a client must not treat this as an error.
   setInterval(() => process.stderr.write('debug: still alive\n'), 5).unref();
 }
 
@@ -307,7 +307,7 @@ rl.on('line', (line) => {
   handle(request);
 });
 
-// MW-STDIO-006: exit promptly when stdin closes.
+// MS-STDIO-006: exit promptly when stdin closes.
 rl.on('close', () => {
   if (MODE !== 'ignores-stdin-close') process.exit(0);
 });

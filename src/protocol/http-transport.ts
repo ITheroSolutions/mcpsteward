@@ -1,13 +1,13 @@
 /**
  * Streamable HTTP transport.
  *
- * Every JSON-RPC message is its own POST to a single endpoint (MW-HTTP-001). The
+ * Every JSON-RPC message is its own POST to a single endpoint (MS-HTTP-001). The
  * server answers with either a single JSON object or an SSE stream scoped to that
- * request, and the client must support both (MW-HTTP-007).
+ * request, and the client must support both (MS-HTTP-007).
  *
  * ## What this revision removed
  *
- * There is no session and no `Mcp-Session-Id` (MW-HTTP-012). There is no GET
+ * There is no session and no `Mcp-Session-Id` (MS-HTTP-012). There is no GET
  * stream endpoint. There is no `Last-Event-ID` resumability: a broken response
  * stream loses the in-flight request and the client re-issues it as a new request
  * with a new id. None of that machinery exists here, and its absence is the point
@@ -25,7 +25,7 @@
 import {
   AuthenticationRequiredError,
   CancellationError,
-  McpWardenError,
+  McpStewardError,
   TimeoutError,
   TransportError,
 } from '../core/errors.js';
@@ -67,7 +67,7 @@ export interface RawHttpResponse {
 export interface RawRequestOptions {
   readonly timeoutMs: number;
   readonly signal?: AbortSignal;
-  /** Override the HTTP method. Only for probing MW-HTTP-011. */
+  /** Override the HTTP method. Only for probing MS-HTTP-011. */
   readonly httpMethod?: string;
   /** Replace the computed headers wholesale. Only for probing. */
   readonly headers?: Readonly<Record<string, string>>;
@@ -83,7 +83,7 @@ export class HttpTransport {
   /**
    * Set only by a legacy `initialize` handshake.
    *
-   * The 2026-07-28 revision has no sessions (MW-HTTP-012), but the handshake era
+   * The 2026-07-28 revision has no sessions (MS-HTTP-012), but the handshake era
    * revisions this package still captures do: the server issues an
    * `Mcp-Session-Id` in its `initialize` response and refuses every later request
    * that does not carry it, answering "Server not initialized". Without this, no
@@ -121,7 +121,7 @@ export class HttpTransport {
     if (response.status === 401 || response.status === 403) {
       throw new AuthenticationRequiredError(
         `${this.host} requires you to sign in before it will describe itself (HTTP ${String(response.status)}). ` +
-          'mcpwarden does not sign in to servers, so it cannot see what this one advertises.',
+          'mcpsteward does not sign in to servers, so it cannot see what this one advertises.',
         {
           details: {
             status: response.status,
@@ -146,7 +146,7 @@ export class HttpTransport {
 
   /**
    * Send a notification. The server answers `202 Accepted` with no body
-   * (MW-HTTP-006), so there is nothing to return.
+   * (MS-HTTP-006), so there is nothing to return.
    */
   async notify(
     message: Record<string, unknown>,
@@ -226,7 +226,7 @@ export class HttpTransport {
         });
       }
 
-      if (error instanceof McpWardenError) throw error;
+      if (error instanceof McpStewardError) throw error;
 
       throw new TransportError(`Could not reach ${this.host}: ${describeNetworkFailure(error)}`, {
         details: { method, host: this.host, code: networkErrorCode(error) },
@@ -281,7 +281,7 @@ export class HttpTransport {
   /**
    * Read the revision out of the outgoing message body.
    *
-   * MW-HTTP-002 requires the `MCP-Protocol-Version` header to match the body's
+   * MS-HTTP-002 requires the `MCP-Protocol-Version` header to match the body's
    * `_meta` value, so taking it from anywhere else would risk sending a request
    * that is non conforming by construction.
    */
@@ -319,7 +319,7 @@ export class HttpTransport {
 
     const bodyText = await this.readBody(response);
 
-    // A 202 Accepted for a notification carries no body by design (MW-HTTP-006).
+    // A 202 Accepted for a notification carries no body by design (MS-HTTP-006).
     if (bodyText.length === 0) {
       return { status: response.status, headers, contentType, bodyText, message: undefined, streamed };
     }
@@ -528,7 +528,7 @@ export function lastSseData(body: string): string | undefined {
  * Read the value the `Mcp-Name` header must carry.
  *
  * `params.name` for `tools/call` and `prompts/get`, `params.uri` for
- * `resources/read` (MW-HTTP-003).
+ * `resources/read` (MS-HTTP-003).
  */
 function readNameForHeader(params: unknown, method: string): string | undefined {
   if (!METHODS_REQUIRING_NAME_HEADER.has(method)) return undefined;

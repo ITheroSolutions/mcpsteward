@@ -28,7 +28,7 @@ function client(mode = 'conforming'): McpClient {
   const transport = new StdioTransport({
     command: process.execPath,
     args: [FIXTURE],
-    env: { MCPWARDEN_FIXTURE_MODE: mode },
+    env: { MCPSTEWARD_FIXTURE_MODE: mode },
   });
   transport.start();
 
@@ -49,7 +49,7 @@ describe('server/discover', () => {
   });
 
   it('reports a server that does not implement it, without failing the capture', async () => {
-    // MW-LIFE-001 makes this a MUST, so not implementing it is a conformance
+    // MS-LIFE-001 makes this a MUST, so not implementing it is a conformance
     // finding. Refusing to inspect the server would defeat the purpose of a tool
     // that exists to find non conforming servers.
     const outcome = await client('no-discover').discover('2026-07-28');
@@ -57,7 +57,7 @@ describe('server/discover', () => {
   });
 
   it('treats a version rejection as a real answer carrying the supported list', async () => {
-    // MW-ERR-006: UnsupportedProtocolVersionError carries data.supported and
+    // MS-ERR-006: UnsupportedProtocolVersionError carries data.supported and
     // data.requested. That is not a failure to discover, it is the server
     // telling us which version to use, and negotiation depends on reading it.
     //
@@ -187,7 +187,7 @@ describe('surface capture', () => {
     const transport = new StdioTransport({
       command: process.execPath,
       args: [FIXTURE],
-      env: { MCPWARDEN_FIXTURE_MODE: 'conforming' },
+      env: { MCPSTEWARD_FIXTURE_MODE: 'conforming' },
     });
     transport.start();
 
@@ -220,7 +220,7 @@ describe('failure handling', () => {
     const transport = new StdioTransport({
       command: process.execPath,
       args: [FIXTURE],
-      env: { MCPWARDEN_FIXTURE_MODE: 'hangs' },
+      env: { MCPSTEWARD_FIXTURE_MODE: 'hangs' },
     });
     transport.start();
 
@@ -234,7 +234,7 @@ describe('failure handling', () => {
     const transport = new StdioTransport({
       command: process.execPath,
       args: [FIXTURE],
-      env: { MCPWARDEN_FIXTURE_MODE: 'hangs' },
+      env: { MCPSTEWARD_FIXTURE_MODE: 'hangs' },
     });
     transport.start();
 

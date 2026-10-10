@@ -54,8 +54,8 @@ describe('examples', () => {
 
   it('imports only symbols the package actually exports', async () => {
     const exported = {
-      '@itherosolutions/mcpwarden/api': new Set(Object.keys(api)),
-      '@itherosolutions/mcpwarden': new Set(Object.keys(root)),
+      'mcpsteward/api': new Set(Object.keys(api)),
+      'mcpsteward': new Set(Object.keys(root)),
     };
     let checked = 0;
 
@@ -91,8 +91,8 @@ describe('examples', () => {
       for (const { module } of parseImports(source)) {
         const permitted =
           module.startsWith('node:') ||
-          module === '@itherosolutions/mcpwarden' ||
-          module.startsWith('@itherosolutions/mcpwarden/');
+          module === 'mcpsteward' ||
+          module.startsWith('mcpsteward/');
 
         expect(permitted, `${file} imports from ${module}`).toBe(true);
       }

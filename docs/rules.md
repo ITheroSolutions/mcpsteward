@@ -31,7 +31,7 @@ Every rule carries a **citation** naming the specification section or SEP that j
 
 ### caching
 
-#### MW-CACHE-001: Cacheable results carry caching hints
+#### MS-CACHE-001: Cacheable results carry caching hints
 
 | Field | Value |
 | --- | --- |
@@ -47,7 +47,7 @@ Every rule carries a **citation** naming the specification section or SEP that j
 
 **Remediation.** Add ttlMs and cacheScope to every list result. ttlMs is a freshness hint in milliseconds and cacheScope is "public" or "private". Use "private" for anything that varies per user.
 
-#### MW-CACHE-002: ttlMs is a non negative integer
+#### MS-CACHE-002: ttlMs is a non negative integer
 
 | Field | Value |
 | --- | --- |
@@ -63,7 +63,7 @@ Every rule carries a **citation** naming the specification section or SEP that j
 
 **Remediation.** Return zero to mean immediately stale rather than a negative value. Clients are told to ignore a negative ttlMs and treat it as zero, so a negative value achieves nothing.
 
-#### MW-CACHE-003: cacheScope is public or private
+#### MS-CACHE-003: cacheScope is public or private
 
 | Field | Value |
 | --- | --- |
@@ -77,7 +77,7 @@ Every rule carries a **citation** naming the specification section or SEP that j
 
 **Remediation.** Use "public" only when the response contains no user specific data, because a public response may be shared across authorization contexts even from an authenticated endpoint.
 
-#### MW-CACHE-004: cacheScope is consistent across pages
+#### MS-CACHE-004: cacheScope is consistent across pages
 
 | Field | Value |
 | --- | --- |
@@ -95,7 +95,7 @@ Every rule carries a **citation** naming the specification section or SEP that j
 
 ### discovery
 
-#### MW-LIFE-001: server/discover is implemented
+#### MS-LIFE-001: server/discover is implemented
 
 | Field | Value |
 | --- | --- |
@@ -111,7 +111,7 @@ Every rule carries a **citation** naming the specification section or SEP that j
 
 **Remediation.** Add a server/discover handler returning supportedVersions, capabilities and instructions. Clients use it to select a protocol version without a handshake, which no longer exists.
 
-#### MW-LIFE-002: DiscoverResult declares supported versions and capabilities
+#### MS-LIFE-002: DiscoverResult declares supported versions and capabilities
 
 | Field | Value |
 | --- | --- |
@@ -125,7 +125,7 @@ Every rule carries a **citation** naming the specification section or SEP that j
 
 **Remediation.** Return supportedVersions as an array of revision identifiers and capabilities as an object. Without supportedVersions a client cannot negotiate and must guess.
 
-#### MW-LIFE-003: Server identifies itself in the discover result
+#### MS-LIFE-003: Server identifies itself in the discover result
 
 | Field | Value |
 | --- | --- |
@@ -141,7 +141,7 @@ Every rule carries a **citation** naming the specification section or SEP that j
 
 ### extensions
 
-#### MW-EXT-001: Extension identifiers carry a prefix
+#### MS-EXT-001: Extension identifiers carry a prefix
 
 | Field | Value |
 | --- | --- |
@@ -157,7 +157,7 @@ Every rule carries a **citation** naming the specification section or SEP that j
 
 ### lifecycle
 
-#### MW-LIFE-007: Removed methods are not implemented
+#### MS-LIFE-007: Removed methods are not implemented
 
 | Field | Value |
 | --- | --- |
@@ -171,7 +171,7 @@ Every rule carries a **citation** naming the specification section or SEP that j
 
 **Remediation.** Remove the ping and logging/setLevel handlers. Per request log level is now set through io.modelcontextprotocol/logLevel in _meta, and liveness is a transport concern.
 
-#### MW-DEP-001: Deprecated capabilities are not declared
+#### MS-DEP-001: Deprecated capabilities are not declared
 
 | Field | Value |
 | --- | --- |
@@ -187,7 +187,7 @@ Every rule carries a **citation** naming the specification section or SEP that j
 
 ### schema
 
-#### MW-ICON-001: Icon sources use a safe scheme
+#### MS-ICON-001: Icon sources use a safe scheme
 
 | Field | Value |
 | --- | --- |
@@ -201,7 +201,7 @@ Every rule carries a **citation** naming the specification section or SEP that j
 
 **Remediation.** Serve icons over HTTPS or embed them as data URIs. Clients are required to reject javascript:, file:, ftp: and ws: schemes, so such an icon simply will not render.
 
-#### MW-RES-001: Every result declares resultType
+#### MS-RES-001: Every result declares resultType
 
 | Field | Value |
 | --- | --- |
@@ -217,7 +217,7 @@ Every rule carries a **citation** naming the specification section or SEP that j
 
 **Remediation.** Add resultType to every result. Use "complete" for an ordinary result and "input_required" for a multi round-trip interim result.
 
-#### MW-TOOL-004: Tool schemas do not reference remote $refs
+#### MS-TOOL-004: Tool schemas do not reference remote $refs
 
 | Field | Value |
 | --- | --- |
@@ -231,7 +231,7 @@ Every rule carries a **citation** naming the specification section or SEP that j
 
 **Remediation.** Inline the referenced schema or use a local $defs pointer. A network $ref makes every client that resolves it fetch a URL you control at tool listing time.
 
-#### MW-RES-002: resultType uses a defined value
+#### MS-RES-002: resultType uses a defined value
 
 | Field | Value |
 | --- | --- |
@@ -245,7 +245,7 @@ Every rule carries a **citation** naming the specification section or SEP that j
 
 **Remediation.** Use one of the defined values. An extension may add values, but only ones it advertises through capabilities, and a client must treat an unrecognised value as invalid.
 
-#### MW-TOOL-003: Tool schemas declare a supported JSON Schema dialect
+#### MS-TOOL-003: Tool schemas declare a supported JSON Schema dialect
 
 | Field | Value |
 | --- | --- |
@@ -261,7 +261,7 @@ Every rule carries a **citation** naming the specification section or SEP that j
 
 ### tools
 
-#### MW-TOOL-001: x-mcp-header annotations are valid
+#### MS-TOOL-001: x-mcp-header annotations are valid
 
 | Field | Value |
 | --- | --- |
@@ -277,7 +277,7 @@ Every rule carries a **citation** naming the specification section or SEP that j
 
 **Remediation.** Move the annotation onto a top level or nested properties entry of type string, integer or boolean. A conforming client excludes an invalid tool from tools/list entirely, so the tool becomes invisible rather than merely unheadered.
 
-#### MW-TOOL-002: tools/list order is deterministic
+#### MS-TOOL-002: tools/list order is deterministic
 
 | Field | Value |
 | --- | --- |
@@ -293,14 +293,14 @@ Every rule carries a **citation** naming the specification section or SEP that j
 
 ## Migration patterns
 
-Patterns in MCP server source that break under 2026-07-28. Detected by `mcpwarden migrate <path>`. Each traces to a rule above or to the SEP that introduced the change.
+Patterns in MCP server source that break under 2026-07-28. Detected by `mcpsteward migrate <path>`. Each traces to a rule above or to the SEP that introduced the change.
 
 ### MIG-INITIALIZE: initialize handshake
 
 | Field | Value |
 | --- | --- |
 | Severity | critical |
-| Rule | MW-LIFE-005 |
+| Rule | MS-LIFE-005 |
 | Safe codemod exists | no |
 
 **Why it breaks.** The initialize and notifications/initialized handshake was removed. A modern client never sends it, so a server that waits for it before serving requests will answer nothing.
@@ -312,7 +312,7 @@ Patterns in MCP server source that break under 2026-07-28. Detected by `mcpwarde
 | Field | Value |
 | --- | --- |
 | Severity | critical |
-| Rule | MW-HTTP-008 |
+| Rule | MS-HTTP-008 |
 | Safe codemod exists | no |
 
 **Why it breaks.** Servers may no longer send roots/list, sampling/createMessage or elicitation/create as their own JSON-RPC requests. Multi Round-Trip Requests replaced that pattern entirely.
@@ -324,7 +324,7 @@ Patterns in MCP server source that break under 2026-07-28. Detected by `mcpwarde
 | Field | Value |
 | --- | --- |
 | Severity | critical |
-| Rule | MW-HTTP-012 |
+| Rule | MS-HTTP-012 |
 | Safe codemod exists | no |
 
 **Why it breaks.** Protocol level sessions and the Mcp-Session-Id header were removed. A server that mints or requires one is holding state a conforming client will never carry back.
@@ -336,7 +336,7 @@ Patterns in MCP server source that break under 2026-07-28. Detected by `mcpwarde
 | Field | Value |
 | --- | --- |
 | Severity | high |
-| Rule | MW-CACHE-001 |
+| Rule | MS-CACHE-001 |
 | Safe codemod exists | yes |
 
 **Why it breaks.** Results from the list methods and resources/read must now carry ttlMs and cacheScope. A result without them is non conforming even though it still parses.
@@ -348,7 +348,7 @@ Patterns in MCP server source that break under 2026-07-28. Detected by `mcpwarde
 | Field | Value |
 | --- | --- |
 | Severity | high |
-| Rule | MW-HTTP-011 |
+| Rule | MS-HTTP-011 |
 | Safe codemod exists | no |
 
 **Why it breaks.** The standalone GET SSE endpoint was removed. Long lived notifications now flow on the response stream of a subscriptions/listen request instead.
@@ -360,7 +360,7 @@ Patterns in MCP server source that break under 2026-07-28. Detected by `mcpwarde
 | Field | Value |
 | --- | --- |
 | Severity | high |
-| Rule | MW-RES-001 |
+| Rule | MS-RES-001 |
 | Safe codemod exists | yes |
 
 **Why it breaks.** Every result must now declare resultType, and a client treats an unrecognised value as invalid.
@@ -384,7 +384,7 @@ Patterns in MCP server source that break under 2026-07-28. Detected by `mcpwarde
 | Field | Value |
 | --- | --- |
 | Severity | medium |
-| Rule | MW-ERR-002 |
+| Rule | MS-ERR-002 |
 | Safe codemod exists | yes |
 
 **Why it breaks.** Code -32002 for resource not found was replaced by -32602, and -32042 was retired entirely. Codes introduced in draft were renumbered into the -32020 range.
@@ -396,7 +396,7 @@ Patterns in MCP server source that break under 2026-07-28. Detected by `mcpwarde
 | Field | Value |
 | --- | --- |
 | Severity | medium |
-| Rule | MW-LIFE-007 |
+| Rule | MS-LIFE-007 |
 | Safe codemod exists | yes |
 
 **Why it breaks.** Both methods were removed from the protocol in this revision.
@@ -408,7 +408,7 @@ Patterns in MCP server source that break under 2026-07-28. Detected by `mcpwarde
 | Field | Value |
 | --- | --- |
 | Severity | medium |
-| Rule | MW-HTTP-012 |
+| Rule | MS-HTTP-012 |
 | Safe codemod exists | no |
 
 **Why it breaks.** SSE stream resumability and message redelivery were removed. A broken stream now loses the in flight request and the client re-issues it with a new id.
@@ -432,7 +432,7 @@ Patterns in MCP server source that break under 2026-07-28. Detected by `mcpwarde
 | Field | Value |
 | --- | --- |
 | Severity | low |
-| Rule | MW-DEP-001 |
+| Rule | MS-DEP-001 |
 | Safe codemod exists | no |
 
 **Why it breaks.** Roots, Sampling and Logging are deprecated with a minimum twelve month window. They still work, but new implementations should not adopt them.

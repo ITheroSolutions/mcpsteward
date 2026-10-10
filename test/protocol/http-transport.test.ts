@@ -78,7 +78,7 @@ describe('required request headers', () => {
   });
 
   it('sends a header value that matches the body, so the server accepts it', async () => {
-    // MW-HTTP-002 and MW-HTTP-004: the fixture rejects a mismatch with 400 and
+    // MS-HTTP-002 and MS-HTTP-004: the fixture rejects a mismatch with 400 and
     // -32020, so a successful exchange is itself the assertion.
     const server = await fixture();
     const transport = new HttpTransport({ url: server.url });
@@ -91,7 +91,7 @@ describe('required request headers', () => {
   });
 
   it('never sends a session header, because sessions were removed', async () => {
-    // MW-HTTP-012. Sending one would be harmless but would signal that the
+    // MS-HTTP-012. Sending one would be harmless but would signal that the
     // client still believes in session state.
     const server = await fixture();
     const transport = new HttpTransport({ url: server.url });
@@ -105,7 +105,7 @@ describe('required request headers', () => {
 
 describe('SSE responses', () => {
   it('reads the final response from a streamed answer', async () => {
-    // MW-HTTP-007: the client MUST support both content types. The fixture emits
+    // MS-HTTP-007: the client MUST support both content types. The fixture emits
     // a progress notification and a keep-alive comment before the response.
     const server = await fixture('streams-response');
     const transport = new HttpTransport({ url: server.url });
@@ -182,7 +182,7 @@ describe('raw exchanges, which conformance rules grade', () => {
   });
 
   it('reports 404 with method not found for an unimplemented method', async () => {
-    // MW-HTTP-005.
+    // MS-HTTP-005.
     const server = await fixture();
     const transport = new HttpTransport({ url: server.url });
 
@@ -195,7 +195,7 @@ describe('raw exchanges, which conformance rules grade', () => {
   });
 
   it('reports 405 for a GET, since the GET stream endpoint was removed', async () => {
-    // MW-HTTP-011.
+    // MS-HTTP-011.
     const server = await fixture();
     const transport = new HttpTransport({ url: server.url });
 

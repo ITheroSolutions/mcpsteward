@@ -25,7 +25,7 @@ import { run, type CliIo } from '../../src/cli/index.js';
 let root: string;
 
 beforeEach(async () => {
-  root = await mkdtemp(join(tmpdir(), 'mcpwarden-precision-'));
+  root = await mkdtemp(join(tmpdir(), 'mcpsteward-precision-'));
 });
 
 afterEach(async () => {

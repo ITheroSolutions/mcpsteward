@@ -36,7 +36,7 @@ import { dirname } from 'node:path';
 
 import { canonicalizeJsonValue, hashCanonicalForm, type ContentHash } from '../core/canonical.js';
 import { readDescription, readInputSchema, readRequiredParameters, readSchemaProperties } from '../core/descriptor.js';
-import { DiscoveryError, toMcpWardenError } from '../core/errors.js';
+import { DiscoveryError, toMcpStewardError } from '../core/errors.js';
 import { descriptorKey } from '../core/merkle.js';
 import { redact } from '../core/redaction.js';
 import type { JsonValue } from '../core/json-parse.js';
@@ -213,7 +213,7 @@ export async function loadPin(path: string): Promise<TrustPin> {
 
     return parsed;
   } catch (error) {
-    throw toMcpWardenError(error, `reading the pin at ${path}`);
+    throw toMcpStewardError(error, `reading the pin at ${path}`);
   }
 }
 

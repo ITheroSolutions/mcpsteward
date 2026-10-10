@@ -1,6 +1,6 @@
 # Architecture
 
-How mcpwarden is put together, and why each part is the shape it is.
+How mcpsteward is put together, and why each part is the shape it is.
 
 This document is written for an engineer evaluating whether the guarantees are real.
 It assumes you will disagree with some of the choices, so every one of them names the
@@ -14,7 +14,7 @@ this design does not protect you from, which is at least as important as what it
 
 ## 1. The pipeline
 
-Everything mcpwarden does runs through one pipeline. The first five stages are shared.
+Everything mcpsteward does runs through one pipeline. The first five stages are shared.
 The last stage forks: the same captured, canonicalized, hashed surface either gets
 graded against the specification, or gets recorded and diffed against a pin.
 
@@ -212,13 +212,13 @@ Within each category, descriptors are sorted by identity before the merkle root 
 built. The wire order a server happened to return them in has no effect on the root.
 
 This is required, not cosmetic. Deterministic ordering from `tools/list` is only a
-SHOULD in the specification (rule MW-TOOL-002), so a fully conforming server may
+SHOULD in the specification (rule MS-TOOL-002), so a fully conforming server may
 legitimately return its tools in a different order between two calls. If order fed the
 root, every such server would report drift on every capture, and a drift signal that
 fires constantly is a drift signal nobody reads. The trust layer must treat reordering
 as no change, because the specification says it is no change.
 
-The consequence is stated plainly: mcpwarden cannot detect a change that consists only
+The consequence is stated plainly: mcpsteward cannot detect a change that consists only
 of reordering. That is the correct behaviour under the specification and it is recorded
 here so nobody has to rediscover it.
 
@@ -281,7 +281,7 @@ is the right call. For a trust ledger it is a correctness bug.
 schema can change in a way a double cannot represent, and the surface hash will not
 move. A ledger that cannot see a change is not a ledger.
 
-So mcpwarden ships its own JSON parser. `parseJsonPreservingNumbers` returns every
+So mcpsteward ships its own JSON parser. `parseJsonPreservingNumbers` returns every
 number as a `JsonNumber` carrying its exact source token, and the canonicalizer
 normalises that token as a decimal string with no `Number` conversion anywhere in the
 path.
@@ -305,7 +305,7 @@ Negative zero canonicalises to `0`, matching RFC 8785. JSON offers no distinctio
 between the two that a consumer could act on, and treating them as different would move
 the hash on a round trip through almost any JSON library, producing false drift.
 
-The cost of the deviation is stated openly: mcpwarden's hashes will not match other JCS
+The cost of the deviation is stated openly: mcpsteward's hashes will not match other JCS
 implementations. Interoperability was traded for the ability to see a class of change
 this package exists to detect. `docs/formats.md` specifies the number rule precisely
 enough for an independent verifier to reproduce it, which is the obligation that
@@ -342,7 +342,7 @@ ledgers.
 
 More immediately, the redaction module's high entropy heuristic redacts hex runs of 32
 characters or more, and a surface merkle root is exactly 64 hex characters. Without the
-marker, mcpwarden's own hashes were being eaten before they reached a report, which the
+marker, mcpsteward's own hashes were being eaten before they reached a report, which the
 tests caught. The prefix is what lets the redactor recognise a hash as a trusted own
 value. Exempting all 64 character hex runs instead would carve a hole a hostile server
 could drive a credential through by padding it to length. See `DECISIONS.md` D-011.
@@ -473,7 +473,7 @@ rewritten middle entry and a missing entry. It does not detect an attacker with 
 access who rebuilds the entire chain from entry zero, because that attacker can produce
 a chain that is perfectly self consistent and says whatever they want. Making that case
 detectable requires exporting roots to somewhere the attacker cannot reach, which is an
-operational practice mcpwarden can document but cannot enforce.
+operational practice mcpsteward can document but cannot enforce.
 
 ### Intended durability properties
 
