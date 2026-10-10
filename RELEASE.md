@@ -61,7 +61,7 @@ npm run build && npm run docs:rules && npm run docs:check
 # 4. Inspect the tarball one more time.
 mkdir -p ./.pack
 npm pack --pack-destination ./.pack
-tar -tzf .pack/mcpsteward-0.1.0.tgz | sort
+tar -tzf .pack/mcpsteward-*.tgz | sort
 
 # 5. Dry run.
 npm publish --dry-run

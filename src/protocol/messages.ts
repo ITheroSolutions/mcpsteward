@@ -18,6 +18,7 @@
 
 import type { JsonValue } from '../core/json-parse.js';
 import type { ProtocolRevision } from '../core/revisions.js';
+import { VERSION } from '../cli/help.js';
 
 /** Reserved `_meta` keys, exactly as the specification names them. */
 export const META_KEYS = {
@@ -74,7 +75,7 @@ export interface Implementation {
 /** How mcpsteward identifies itself. Self reported, never a security control. */
 export const CLIENT_INFO: Implementation = {
   name: 'mcpsteward',
-  version: '0.1.0',
+  version: VERSION,
 };
 
 export interface RequestMetaOptions {

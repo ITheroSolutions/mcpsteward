@@ -7,11 +7,14 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-10
+
 ### Added
 
 - When a server only speaks a specification revision newer than this version
   understands, the error says so and prints the command to update mcpsteward.
 - README section on updating.
+- A logo, shown at the top of the README.
 
 ## [0.1.0] - 2026-10-10
 
@@ -74,5 +77,6 @@ First release.
 - Zero runtime dependencies. No telemetry, no account, no cloud service, and no
   network access except to the servers you ask it to inspect.
 
-[Unreleased]: https://github.com/ITheroSolutions/mcpsteward/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/ITheroSolutions/mcpsteward/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/ITheroSolutions/mcpsteward/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/ITheroSolutions/mcpsteward/releases/tag/v0.1.0
