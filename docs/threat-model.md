@@ -109,10 +109,13 @@ identity is stored separately from content hash. A tool whose description change
 recognised as the same tool with different content, which is the tool poisoning signal.
 Collapsing the two would bury the single most important finding in ordinary churn.
 
-**Truncation, reordering, a rewritten middle entry and a missing entry in the ledger.**
-*Intended, not yet implemented.* Each is meant to produce a distinct typed error naming
-the exact sequence number where integrity fails, via the sequence number plus
-`previousHash` chain.
+**A rewritten, reordered, inserted or missing entry in the ledger, and a write cut off
+part way.** `ledger verify` reports each with the sequence number where integrity
+fails, through the sequence numbers and the `previousHash` chain. It does **not** detect
+the most recent entries being cleanly removed: what remains is a shorter chain that is
+still consistent. `ledger verify` prints the entry count and the head hash so they can
+be recorded somewhere other than the ledger file, which is the only thing that shows a
+shortened chain. See section 4.1.
 
 **A duplicate object key smuggling a definition past the ledger.** The parser rejects
 duplicate keys rather than resolving them. Under last-wins resolution a hostile server
@@ -202,6 +205,12 @@ from sequence zero. Every entry will hash correctly. Every `previousHash` will m
 valid. The record will say whatever the attacker wants, including that a poisoned tool
 description was there all along and was approved.
 
+The same attacker needs far less to hide recent history: removing the last entries at a
+line boundary leaves a shorter chain that verifies. The only defence available today is
+manual. `ledger verify` prints the entry count and head hash, and a copy of those kept
+somewhere the attacker cannot write, a ticket, a commit, another machine, shows both a
+shortened and a rebuilt ledger.
+
 The same attacker can edit a pin, at which point any current surface compares as
 unchanged and drift detection reports silence.
 
@@ -222,14 +231,15 @@ history unforgeable by someone who owns the machine.
 
 ### 4.2 The risk heuristic being wrong
 
-*Drift risk scoring is designed but not yet implemented.* When it lands, it is a
-heuristic and is labelled as one everywhere it is rendered.
+Drift risk scoring is a heuristic and is labelled as one everywhere it is rendered.
 
-It will be wrong in both directions. It will rate a genuinely dangerous change as low
-because the tool's schema does not mention filesystem, network, shell or credential
-access. It will rate a harmless copy edit as high because the tool happens to touch a
-path. Its weights are configurable, which means the number is a function of your
-configuration as much as of the change.
+It is wrong in both directions. It can rate a genuinely dangerous change as medium
+because the new text avoids every phrase the poisoning markers look for and the tool's
+schema does not mention filesystem, network, shell or credential access. A careful
+attacker who has read `src/trust/markers.ts` can write around all of it. It can rate a
+harmless copy edit as high because the tool happens to touch a path, or as critical
+because an honest description mentions a `.env` file. Its weights are configurable,
+which means the number is a function of your configuration as much as of the change.
 
 Do not gate a deployment solely on a risk tier. A `medium` is not a statement that
 something is safe; it is a statement that a set of documented keyword and structural

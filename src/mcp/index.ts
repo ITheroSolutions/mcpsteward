@@ -28,8 +28,9 @@
 import { createInterface } from 'node:readline';
 
 import { grade } from '../conformance/index.js';
+import { isEntryPoint } from '../core/entry.js';
 import { toMcpWardenError } from '../core/errors.js';
-import { parseJsonPreservingNumbers, type JsonValue } from '../core/json-parse.js';
+import { isJsonNumber, parseJsonPreservingNumbers, type JsonValue } from '../core/json-parse.js';
 import { redactDeep } from '../core/redaction.js';
 import { TARGET_REVISION } from '../core/revisions.js';
 import { discover } from '../discovery/index.js';
@@ -233,9 +234,27 @@ const TOOLS: readonly ToolDefinition[] = [
 // Protocol
 // ---------------------------------------------------------------------------
 
-/** The only writer to stdout in this process. */
-function send(message: unknown): void {
-  process.stdout.write(`${JSON.stringify(message)}\n`);
+/**
+ * The only writer to stdout in this process.
+ *
+ * The id is written back exactly as it arrived. Requests are parsed with number
+ * tokens preserved, so a numeric id is held as a token object, and serialising
+ * that object directly answered a request whose id was `1` with an id of
+ * `{"__jsonNumber":true,"token":"1"}`. No client could match that to its
+ * request, and every client that numbers its requests, which is nearly all of
+ * them, would have timed out on every call. The test suite's own client uses
+ * string ids, which is why nothing caught it.
+ */
+function send(id: JsonValue, body: Record<string, unknown>): void {
+  const rest = JSON.stringify(body);
+  process.stdout.write(`{"jsonrpc":"2.0","id":${idText(id)},${rest.slice(1)}\n`);
+}
+
+/** A request id as JSON text: the original number token, a string, or null. */
+function idText(id: JsonValue): string {
+  if (isJsonNumber(id)) return id.token;
+  if (typeof id === 'string') return JSON.stringify(id);
+  return 'null';
 }
 
 function diagnostic(text: string): void {
@@ -249,29 +268,73 @@ const SERVER_META = {
 };
 
 function respond(id: JsonValue, result: Record<string, unknown>): void {
-  send({ jsonrpc: '2.0', id, result: { resultType: 'complete', ...result, ...SERVER_META } });
+  send(id, { result: { resultType: 'complete', ...result, ...SERVER_META } });
 }
 
 function respondError(id: JsonValue, code: number, message: string, data?: unknown): void {
-  send({
-    jsonrpc: '2.0',
-    id,
-    error: { code, message, ...(data === undefined ? {} : { data }) },
-  });
+  send(id, { error: { code, message, ...(data === undefined ? {} : { data }) } });
 }
+
+/**
+ * Per connection state, used only for clients of the handshake era.
+ *
+ * A 2026-07-28 request is self describing and is handled statelessly, as that
+ * revision requires. But no MCP client in use when this was released speaks
+ * 2026-07-28 yet, so a server that spoke nothing else could not be used by any
+ * of them. A client that opens with `initialize` is served under the previous
+ * revision for the rest of the connection, which is how that revision works.
+ */
+export interface ConnectionState {
+  legacy: boolean;
+}
+
+/** The handshake era revisions this server answers `initialize` for. */
+const LEGACY_REVISIONS: readonly string[] = ['2025-11-25', '2025-06-18', '2025-03-26'];
 
 /** Caching hints, required on every complete list result by MW-CACHE-001. */
 function cacheable<T extends Record<string, unknown>>(body: T): T & Record<string, unknown> {
   return { ...body, ttlMs: TTL_MS, cacheScope: 'public' };
 }
 
-export async function handleRequest(request: Record<string, JsonValue>): Promise<void> {
-  const id = request['id'] ?? null;
+export async function handleRequest(
+  request: Record<string, JsonValue>,
+  state: ConnectionState = { legacy: false },
+): Promise<void> {
   const method = request['method'];
+
+  // A message without an id is a notification, and a notification is never
+  // answered, whatever it says. This used to reply with an error carrying a null
+  // id, which a client has no request to match against.
+  if (request['id'] === undefined) return;
+
+  const id = request['id'];
   const params = asObject(request['params']);
   const meta = asObject(params['_meta']);
 
   const requested = meta['io.modelcontextprotocol/protocolVersion'];
+
+  // The handshake of the previous era. The server answers with the newest
+  // handshake era revision it shares with the client.
+  if (method === 'initialize' && typeof requested !== 'string') {
+    const asked = params['protocolVersion'];
+    const agreed = typeof asked === 'string' && LEGACY_REVISIONS.includes(asked) ? asked : '2025-11-25';
+
+    state.legacy = true;
+    send(id, {
+      result: {
+        protocolVersion: agreed,
+        capabilities: { tools: {} },
+        serverInfo: { name: 'mcpwarden', version: VERSION },
+        instructions: INSTRUCTIONS,
+      },
+    });
+    return;
+  }
+
+  if (state.legacy && typeof requested !== 'string') {
+    await handleLegacy(id, method, params);
+    return;
+  }
 
   // MW-META-001: a request missing a required _meta field is malformed.
   if (typeof requested !== 'string') {
@@ -301,10 +364,7 @@ export async function handleRequest(request: Record<string, JsonValue>): Promise
         cacheable({
           supportedVersions: [TARGET_REVISION],
           capabilities: { tools: {} },
-          instructions:
-            'Inspect MCP servers configured on this machine. discover_servers, verify_ledger ' +
-            'and check_policy read local files and connect to nothing. capture_surface, ' +
-            'check_conformance and diff_against_trust start the server being inspected.',
+          instructions: INSTRUCTIONS,
         }),
       );
       return;
@@ -314,9 +374,7 @@ export async function handleRequest(request: Record<string, JsonValue>): Promise
         id,
         cacheable({
           // MW-TOOL-002: a deterministic order lets clients cache the list.
-          tools: [...TOOLS]
-            .sort((a, b) => a.name.localeCompare(b.name))
-            .map((tool) => ({
+          tools: listedTools().map((tool) => ({
               name: tool.name,
               description: tool.description,
               inputSchema: tool.inputSchema,
@@ -326,32 +384,12 @@ export async function handleRequest(request: Record<string, JsonValue>): Promise
       return;
 
     case 'tools/call': {
-      const name = params['name'];
-      const tool = TOOLS.find((t) => t.name === name);
-
-      if (tool === undefined) {
-        respondError(id, -32602, `Unknown tool ${describeMethod(name)}`);
+      const outcome = await callTool(params);
+      if (outcome === undefined) {
+        respondError(id, -32602, `Unknown tool ${describeMethod(params['name'])}`);
         return;
       }
-
-      try {
-        const output = await tool.handler(asObject(params['arguments']));
-
-        respond(id, {
-          content: [{ type: 'text', text: JSON.stringify(redactDeep(output), null, 2) }],
-          structuredContent: redactDeep(output),
-          isError: false,
-        });
-      } catch (error) {
-        // A failed tool call is a result, not a protocol error. The model needs
-        // to see what went wrong so it can choose differently.
-        const wrapped = toMcpWardenError(error, `calling ${tool.name}`);
-
-        respond(id, {
-          content: [{ type: 'text', text: `${wrapped.code}: ${wrapped.message}` }],
-          isError: true,
-        });
-      }
+      respond(id, outcome);
       return;
     }
 
@@ -362,6 +400,86 @@ export async function handleRequest(request: Record<string, JsonValue>): Promise
 }
 
 /** Render a method name for an error message without risking [object Object]. */
+const INSTRUCTIONS =
+  'Inspect MCP servers configured on this machine. discover_servers, verify_ledger ' +
+  'and check_policy read local files and connect to nothing. capture_surface, ' +
+  'check_conformance and diff_against_trust start the server being inspected.';
+
+/** MW-TOOL-002: a deterministic order lets clients cache the list. */
+function listedTools(): readonly (typeof TOOLS)[number][] {
+  return [...TOOLS].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/** Run a tool. Undefined when no tool has that name. */
+async function callTool(
+  params: Record<string, JsonValue>,
+): Promise<Record<string, unknown> | undefined> {
+  const tool = TOOLS.find((t) => t.name === params['name']);
+  if (tool === undefined) return undefined;
+
+  try {
+    const output = await tool.handler(asObject(params['arguments']));
+
+    return {
+      content: [{ type: 'text', text: JSON.stringify(redactDeep(output), null, 2) }],
+      structuredContent: redactDeep(output),
+      isError: false,
+    };
+  } catch (error) {
+    // A failed tool call is a result, not a protocol error. The model needs to
+    // see what went wrong so it can choose differently.
+    const wrapped = toMcpWardenError(error, `calling ${tool.name}`);
+
+    return {
+      content: [{ type: 'text', text: `${wrapped.code}: ${wrapped.message}` }],
+      isError: true,
+    };
+  }
+}
+
+/**
+ * Serve a request from a client that opened with `initialize`.
+ *
+ * The same tools with the previous revision's result shapes: no `resultType`, no
+ * caching hints, and `ping` answered, since that revision defines it.
+ */
+async function handleLegacy(
+  id: JsonValue,
+  method: JsonValue | undefined,
+  params: Record<string, JsonValue>,
+): Promise<void> {
+  switch (method) {
+    case 'ping':
+      send(id, { result: {} });
+      return;
+
+    case 'tools/list':
+      send(id, {
+        result: {
+          tools: listedTools().map((tool) => ({
+            name: tool.name,
+            description: tool.description,
+            inputSchema: tool.inputSchema,
+          })),
+        },
+      });
+      return;
+
+    case 'tools/call': {
+      const outcome = await callTool(params);
+      if (outcome === undefined) {
+        respondError(id, -32602, `Unknown tool ${describeMethod(params['name'])}`);
+        return;
+      }
+      send(id, { result: outcome });
+      return;
+    }
+
+    default:
+      respondError(id, -32601, `Method not found: ${describeMethod(method)}`);
+  }
+}
+
 function describeMethod(method: JsonValue | undefined): string {
   return typeof method === 'string' ? method : JSON.stringify(method);
 }
@@ -421,6 +539,7 @@ function emptyEvidence(revision: ProtocolRevision): CaptureEvidence {
 /** Start the server on stdio. */
 export function serve(): void {
   const reader = createInterface({ input: process.stdin });
+  const state: ConnectionState = { legacy: false };
 
   reader.on('line', (line) => {
     const trimmed = line.trim();
@@ -434,7 +553,7 @@ export function serve(): void {
       return;
     }
 
-    void handleRequest(asObject(request)).catch((error: unknown) => {
+    void handleRequest(asObject(request), state).catch((error: unknown) => {
       const wrapped = toMcpWardenError(error, 'handling a request');
       diagnostic(`internal error: ${wrapped.message}`);
     });
@@ -449,8 +568,5 @@ export function serve(): void {
 }
 
 /* c8 ignore start -- the process entry point is exercised by subprocess tests */
-const isDirectRun =
-  process.argv[1] !== undefined && process.argv[1].includes('mcp') && !process.env['VITEST'];
-
-if (isDirectRun) serve();
+if (isEntryPoint(import.meta.url)) serve();
 /* c8 ignore stop */

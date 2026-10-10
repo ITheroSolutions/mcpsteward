@@ -44,8 +44,9 @@ First release.
   The pin stores hashes only, never a server's content.
 - `mcpwarden ledger log`, `ledger verify` and `ledger export`: an append only, hash
   chained record of every capture. `verify` names the exact entry where integrity
-  fails. The format is specified in `docs/formats.md` precisely enough to write an
-  independent verifier.
+  fails, and prints the entry count and head hash to record elsewhere, since a chain
+  with its most recent entries removed still verifies. The format is specified in
+  `docs/formats.md` precisely enough to write an independent verifier.
 - `mcpwarden policy init`, `policy check` and `verify`: a policy gate for CI and
   pre commit hooks, covering allowlists and denylists, forbidden auth postures,
   inline credentials, unpinned servers, a minimum grade and a maximum drift risk.
@@ -59,8 +60,11 @@ First release.
   checked, and the state of the ledger and policy.
 - Reports in terminal, JSON, NDJSON, Markdown, SARIF and HTML formats. Secrets are
   redacted once, before any format is rendered.
-- A programmatic API at `mcpwarden/api`, and a built in MCP server exposing six
-  tools, so an agent can inspect its own tool surface.
+- A programmatic API at `mcpwarden/api`.
+- `mcpwarden-mcp`: mcpwarden as an MCP server exposing six tools, so an assistant can
+  inspect the other servers it has been given. Speaks 2026-07-28 and also completes
+  the older `initialize` handshake that current clients send. Tested against the
+  official MCP SDK client.
 - Zero runtime dependencies. No telemetry, no account, no cloud service, and no
   network access except to the servers you ask it to inspect.
 

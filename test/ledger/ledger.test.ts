@@ -233,6 +233,25 @@ describe('verification', () => {
       expect(result.valid).toBe(false);
     });
 
+    it('cannot detect the last entries being cleanly removed, but the head shows it', async () => {
+      // A stated limitation, pinned so the documentation stays true. A chain cut
+      // at a line boundary is a shorter, still consistent chain; nothing inside
+      // the file records how long it should be. The head hash, recorded
+      // elsewhere beforehand, is what differs.
+      const ledger = new Ledger(path);
+      await appendN(ledger, 5);
+      const before = await ledger.verify();
+
+      const lines = await rawLines();
+      await writeLines(lines.slice(0, -2));
+
+      const after = await ledger.verify();
+      expect(after.valid).toBe(true);
+      expect(after.entryCount).toBe(before.entryCount - 2);
+      expect(before.headHash).toMatch(/^sha256:/);
+      expect(after.headHash).not.toBe(before.headHash);
+    });
+
     it('detects truncation mid line', async () => {
       const ledger = new Ledger(path);
       await appendN(ledger, 3);

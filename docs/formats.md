@@ -375,6 +375,12 @@ An empty ledger, header only, is valid.
 It proves the chain is **internally consistent**: no entry has been modified,
 removed, reordered or inserted without also recomputing every subsequent entry.
 
+It does **not** prove the ledger is complete. Removing the last entries, cleanly at a
+line boundary, leaves a shorter chain that this algorithm accepts, because nothing
+inside the file records how long it should be. The entry count and the `entryHash` of
+the last entry identify the whole chain; a verifier that wants to detect a shortened
+ledger has to compare them with values recorded somewhere else.
+
 It does **not** prove the ledger is authentic. Nothing here is signed, notarised,
 or anchored outside the file. Anyone who can write the file can delete it and
 rebuild a complete, perfectly self consistent chain from sequence 0, and this

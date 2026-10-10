@@ -80,6 +80,13 @@ export interface VerifyResult {
   readonly brokenAt?: number;
   readonly reason?: string;
   readonly headRoot?: ContentHash;
+  /**
+   * The entry hash of the last entry. Together with `entryCount` this identifies
+   * the whole chain. Verification cannot tell that trailing entries were cleanly
+   * removed, because the shorter chain is still consistent; comparing this value
+   * with one recorded earlier, somewhere other than this file, is what can.
+   */
+  readonly headHash?: ContentHash;
 }
 
 /**
@@ -343,7 +350,7 @@ export class Ledger {
     return {
       valid: true,
       entryCount: entries.length,
-      ...(head === undefined ? {} : { headRoot: head.surfaceRoot }),
+      ...(head === undefined ? {} : { headRoot: head.surfaceRoot, headHash: head.entryHash }),
     };
   }
 

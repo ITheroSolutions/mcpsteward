@@ -22,6 +22,7 @@ import { homedir, platform } from 'node:os';
 import { join } from 'node:path';
 
 import { parseConfigFile, resolveConfig, type McpWardenConfig } from '../core/config.js';
+import { isEntryPoint } from '../core/entry.js';
 import { isMcpWardenError, toMcpWardenError } from '../core/errors.js';
 import { createLogger, type Logger } from '../core/logger.js';
 import { collectEnvSecrets, type RedactionOptions } from '../core/redaction.js';
@@ -684,10 +685,29 @@ async function ledgerCommand(
 
   switch (subcommand) {
     case 'verify': {
+      // Not a pass: a ledger somebody expected to be here and is not is exactly
+      // what verification exists to notice. But it is said plainly, rather than
+      // as a failed verification quoting a file system error.
+      if (!(await ledger.exists())) {
+        io.stderr(
+          `No ledger at ${ledgerPathFor(flags, config)}.\n` +
+            'Nothing has been captured on this machine yet, or the file has been removed.\n' +
+            'Record a first entry with: mcpwarden capture <server>\n',
+        );
+        return EXIT_CODES.policyFailure;
+      }
+
       const result = await ledger.verify();
 
       if (result.valid) {
-        io.stdout(`Ledger is intact. ${String(result.entryCount)} entries verified.\n`);
+        io.stdout(
+          `Ledger is intact. ${String(result.entryCount)} entries verified.\n` +
+            (result.headHash === undefined
+              ? ''
+              : `Head: ${result.headHash}\n` +
+                'Record the entry count and head somewhere other than this file. Removing the most\n' +
+                'recent entries leaves a shorter chain that still verifies; only a recorded head shows it.\n'),
+        );
         return EXIT_CODES.success;
       }
 
@@ -973,10 +993,7 @@ async function write(text: string, flags: GlobalFlags, io: CliIo): Promise<void>
 }
 
 /* c8 ignore start -- the process entry point is exercised by subprocess tests */
-const isDirectRun =
-  process.argv[1] !== undefined && process.argv[1].includes('cli') && !process.env['VITEST'];
-
-if (isDirectRun) {
+if (isEntryPoint(import.meta.url)) {
   const code = await run(process.argv.slice(2), {
     stdout: (text) => process.stdout.write(text),
     stderr: (text) => process.stderr.write(text),

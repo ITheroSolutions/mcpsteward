@@ -270,7 +270,7 @@ const machine = await inventory();
 
 for (const server of machine.servers) {
   const { report } = await conformServer(server, { timeoutMs: 10_000 });
-  console.log(server.name, report.grade.letter);
+  console.log(server.name, report.grade.letter ?? 'not graded');
 }
 ```
 
@@ -281,6 +281,28 @@ tree so nothing is left running.
 
 Five runnable examples are in [`examples/`](examples).
 
+## Use it from your AI client
+
+mcpwarden is also an MCP server, so an assistant can inspect the other servers it has
+been given. Add it to any MCP client as a stdio server:
+
+```json
+{
+  "mcpServers": {
+    "mcpwarden": { "command": "npx", "args": ["-y", "-p", "mcpwarden", "mcpwarden-mcp"] }
+  }
+}
+```
+
+It offers six tools: `discover_servers`, `verify_ledger` and `check_policy`, which read
+local files and connect to nothing, and `capture_surface`, `check_conformance` and
+`diff_against_trust`, which start the server being inspected. Output is redacted the
+same way the command line's is.
+
+It speaks `2026-07-28`, and also completes the older `initialize` handshake, because
+that is what MCP clients actually send today. It is tested against the official MCP
+SDK client and graded A by its own conformance engine.
+
 ## What this does not do
 
 Stated plainly, because a security tool that overclaims is worse than none.
@@ -289,7 +311,10 @@ Stated plainly, because a security tool that overclaims is worse than none.
 internally consistent: no entry was modified, removed or reordered without
 recomputing everything after it. It is not signed and not anchored anywhere outside
 the file. Anyone who can write the file can delete it and rebuild a complete, self
-consistent chain from scratch, and verification will accept it.
+consistent chain from scratch, and verification will accept it. Removing only the most
+recent entries also passes, since a shorter chain is still consistent. `ledger verify`
+prints the entry count and head hash; keeping those somewhere other than the ledger
+file is what lets you notice either.
 
 **It does not attest what a server does.** Only the advertised surface is captured. A
 tool whose descriptor never changes can still do anything at call time, and a server
