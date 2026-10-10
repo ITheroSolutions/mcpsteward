@@ -120,6 +120,20 @@ describe('version negotiation', () => {
     const c = new McpClient(rejectingTransport(['1999-01-01']));
     await expect(c.negotiateRevision()).rejects.toThrow(/No mutually supported/);
   });
+
+  it('says how to update when the server is on a newer revision than this build knows', async () => {
+    // Each release grades one revision, so a user on an old copy will meet
+    // servers that have moved on. The error should tell them what to do.
+    const c = new McpClient(rejectingTransport(['2099-01-01']));
+    await expect(c.negotiateRevision()).rejects.toThrow(
+      /newer than this version of mcpsteward understands.*npm install -g mcpsteward@latest/,
+    );
+  });
+
+  it('does not suggest updating when the server is merely older', async () => {
+    const c = new McpClient(rejectingTransport(['1999-01-01']));
+    await expect(c.negotiateRevision()).rejects.not.toThrow(/npm install/);
+  });
 });
 
 /** A transport that rejects every version and advertises the given list. */

@@ -388,6 +388,24 @@ Expect that for most servers today. The published MCP SDK predates `2026-07-28`,
 nearly every server in the wild still speaks `2025-11-25`. Their surfaces can be
 captured, pinned and diffed like any other; only the grade waits for them to migrate.
 
+## Updating
+
+```bash
+npm install -g mcpsteward@latest
+```
+
+Or skip installing altogether: `npx -y mcpsteward@latest discover` always runs the
+newest release.
+
+mcpsteward never updates itself and never checks for updates in the background.
+Doing either would mean contacting a server you did not ask it to, which it promises
+not to do. `mcpsteward --version` shows what you have, and the
+[changelog](CHANGELOG.md) shows what is new.
+
+It needs an update when the MCP specification gets a new revision, since each version
+grades one revision. If a server speaks a revision newer than your copy understands,
+mcpsteward says so and prints the update command rather than guessing.
+
 ## Documentation
 
 | File | Contents |

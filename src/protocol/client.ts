@@ -445,9 +445,21 @@ export class McpClient {
     const best = selectBestRevision(discover.supportedVersions);
 
     if (best === undefined) {
+      // Revisions are dates, so they sort as text. A server whose every revision
+      // is later than the newest this build knows is simply ahead of it, and the
+      // useful thing to say is how to catch up.
+      const newest = [...SUPPORTED_REVISIONS].sort().at(-1) ?? requested;
+      const serverIsAhead =
+        discover.supportedVersions.length > 0 &&
+        discover.supportedVersions.every((version) => version > newest);
+
       throw new VersionNegotiationError(
-        `No mutually supported protocol revision. Server supports ${discover.supportedVersions.join(', ')}`,
-        { details: { requested, serverSupported: [...discover.supportedVersions] } },
+        `No mutually supported protocol revision. Server supports ${discover.supportedVersions.join(', ')}` +
+          (serverIsAhead
+            ? `. That is newer than this version of mcpsteward understands (up to ${newest}). ` +
+              'Update with: npm install -g mcpsteward@latest'
+            : ''),
+        { details: { requested, serverSupported: [...discover.supportedVersions], serverIsAhead } },
       );
     }
 

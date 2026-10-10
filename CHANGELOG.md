@@ -7,6 +7,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Added
+
+- When a server only speaks a specification revision newer than this version
+  understands, the error says so and prints the command to update mcpsteward.
+- README section on updating.
+
 ## [0.1.0] - 2026-10-10
 
 First release.
