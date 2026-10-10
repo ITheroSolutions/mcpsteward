@@ -7,6 +7,8 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-10
+
 First release.
 
 ### Added
@@ -62,4 +64,5 @@ First release.
 - Zero runtime dependencies. No telemetry, no account, no cloud service, and no
   network access except to the servers you ask it to inspect.
 
-[Unreleased]: https://github.com/ITheroSolutions/mcpwarden/compare/HEAD...HEAD
+[Unreleased]: https://github.com/ITheroSolutions/mcpwarden/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/ITheroSolutions/mcpwarden/releases/tag/v0.1.0
