@@ -123,8 +123,8 @@ dependency rather than merely listed, and exercised there.
 | Tests, fixtures or specifications inside | none |
 | Ledger, pin or captured surface files inside | none |
 | Runtime dependencies of the installed package | `{}` |
-| `import { ... } from 'mcpwarden'` | resolves |
-| `import { inventory } from 'mcpwarden/api'` | resolves |
+| `import { ... } from '@itherosolutions/mcpwarden'` | resolves |
+| `import { inventory } from '@itherosolutions/mcpwarden/api'` | resolves |
 | Type declarations | present for every entry point |
 | `dist/cli/index.js --version` | prints the version |
 | `dist/cli/index.js discover --format json` | valid JSON |

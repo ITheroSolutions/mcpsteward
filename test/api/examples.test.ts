@@ -54,9 +54,10 @@ describe('examples', () => {
 
   it('imports only symbols the package actually exports', async () => {
     const exported = {
-      'mcpwarden/api': new Set(Object.keys(api)),
-      mcpwarden: new Set(Object.keys(root)),
+      '@itherosolutions/mcpwarden/api': new Set(Object.keys(api)),
+      '@itherosolutions/mcpwarden': new Set(Object.keys(root)),
     };
+    let checked = 0;
 
     for (const file of await exampleFiles()) {
       const source = await readFile(join(EXAMPLES_DIR, file), 'utf8');
@@ -66,6 +67,7 @@ describe('examples', () => {
         const available = exported[module as keyof typeof exported];
 
         for (const name of names) {
+          checked += 1;
           expect(
             available.has(name),
             `${file} imports ${name} from ${module}, which does not export it`,
@@ -73,6 +75,11 @@ describe('examples', () => {
         }
       }
     }
+
+    // Guards the check itself. When the package was renamed, the module names
+    // above no longer matched the examples and this test passed while checking
+    // nothing.
+    expect(checked).toBeGreaterThan(10);
   });
 
   it('imports only from the package or from node builtins', async () => {
@@ -83,7 +90,9 @@ describe('examples', () => {
 
       for (const { module } of parseImports(source)) {
         const permitted =
-          module.startsWith('node:') || module === 'mcpwarden' || module.startsWith('mcpwarden/');
+          module.startsWith('node:') ||
+          module === '@itherosolutions/mcpwarden' ||
+          module.startsWith('@itherosolutions/mcpwarden/');
 
         expect(permitted, `${file} imports from ${module}`).toBe(true);
       }

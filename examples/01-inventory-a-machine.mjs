@@ -7,7 +7,7 @@
  * Run with:  node examples/01-inventory-a-machine.mjs
  */
 
-import { inventory } from 'mcpwarden/api';
+import { inventory } from '@itherosolutions/mcpwarden/api';
 
 const result = await inventory();
 

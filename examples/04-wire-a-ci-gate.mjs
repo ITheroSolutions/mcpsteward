@@ -14,8 +14,8 @@
 
 import { readFile } from 'node:fs/promises';
 
-import { evaluatePolicy, inventory } from 'mcpwarden/api';
-import { initPolicy, parsePolicy } from 'mcpwarden';
+import { evaluatePolicy, inventory } from '@itherosolutions/mcpwarden/api';
+import { initPolicy, parsePolicy } from '@itherosolutions/mcpwarden';
 
 const policyPath = process.argv[2] ?? 'mcpwarden.policy.json';
 

@@ -9,10 +9,13 @@ How to cut a release of `mcpwarden`, and what to settle before the first one.
 ### 1. Confirm the package name is still free
 
 ```bash
-npm view mcpwarden
+npm view @itherosolutions/mcpwarden
 ```
 
-A `404` means it is available.
+A `404` means it is available. The unscoped name `mcpwarden` cannot be used: npm
+rejects it at publish time as too similar to the existing, unrelated package
+`mcp-warden`. That check only runs on upload, so `npm view mcpwarden` reporting a 404
+says nothing about it.
 
 ### 2. Decide on the unconfirmed client paths
 
@@ -58,7 +61,7 @@ npm run build && npm run docs:rules && npm run docs:check
 # 4. Inspect the tarball one more time.
 mkdir -p ./.pack
 npm pack --pack-destination ./.pack
-tar -tzf .pack/mcpwarden-0.1.0.tgz | sort
+tar -tzf .pack/itherosolutions-mcpwarden-0.1.0.tgz | sort
 
 # 5. Dry run.
 npm publish --dry-run
@@ -89,11 +92,11 @@ no automatic path from a merge to a published package.
 
 ```bash
 # Confirm it installs from the registry rather than from disk.
-cd $(mktemp -d) && npm init -y && npm install mcpwarden
-node -e "import('mcpwarden').then(m => console.log(m.TARGET_REVISION))"
+cd $(mktemp -d) && npm init -y && npm install @itherosolutions/mcpwarden
+node -e "import('@itherosolutions/mcpwarden').then(m => console.log(m.TARGET_REVISION))"
 
 # Confirm the CLI works when installed globally.
-npx mcpwarden doctor
+npx @itherosolutions/mcpwarden doctor
 ```
 
 ---

@@ -478,3 +478,26 @@ schema changes and eight new tools at high, two description changes, four metada
 only changes and eight removals. Pins written before this carry no field hashes; a
 diff against one says the changed part is unknown rather than guessing, and trusting
 the server again records them.
+
+---
+
+## D-017: Published as @itherosolutions/mcpwarden
+
+**Decision:** The npm package is `@itherosolutions/mcpwarden`. The product, the
+repository and the installed command are all still `mcpwarden`.
+
+**Reasoning.** npm refused the unscoped name at publish time as too similar to an
+existing, unrelated package named `mcp-warden`. npm treats names that differ only by
+punctuation as the same name, and applies that check only on upload, so the name had
+looked available throughout. A scope is npm's own suggested remedy and is the only way
+to keep the name.
+
+**Rejected:** renaming the product to get an unscoped package. The name is already on
+the repository, the command, the ledger file format's magic string and the SARIF tool
+name, and a new unscoped name could be refused by the same rule.
+
+**Consequence.** Install with `npm install -g @itherosolutions/mcpwarden`; import from
+`@itherosolutions/mcpwarden` and `@itherosolutions/mcpwarden/api`. `npx
+@itherosolutions/mcpwarden` runs the `mcpwarden` command, because npx picks the bin
+matching the package name without its scope. The README says the package is unrelated to
+`mcp-warden`.

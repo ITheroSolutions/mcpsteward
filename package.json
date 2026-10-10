@@ -1,5 +1,5 @@
 {
-  "name": "mcpwarden",
+  "name": "@itherosolutions/mcpwarden",
   "version": "0.1.0",
   "description": "Local-first MCP server inspection and trust toolkit. Conformance grading against the 2026-07-28 specification plus a tamper-evident surface ledger. No cloud, no account, no LLM.",
   "keywords": [

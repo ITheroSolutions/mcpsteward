@@ -10,8 +10,8 @@
 
 import { fileURLToPath } from 'node:url';
 
-import { ServerSession, withServer } from 'mcpwarden/api';
-import { buildReport, createLogger, grade, render } from 'mcpwarden';
+import { ServerSession, withServer } from '@itherosolutions/mcpwarden/api';
+import { buildReport, createLogger, grade, render } from '@itherosolutions/mcpwarden';
 
 // A server this example controls, so the script is runnable with no setup and
 // never touches anything real.

@@ -7,7 +7,7 @@
  * Run with:  node examples/02-grade-one-server.mjs <server-name>
  */
 
-import { conformServer, inventory } from 'mcpwarden/api';
+import { conformServer, inventory } from '@itherosolutions/mcpwarden/api';
 
 const name = process.argv[2];
 

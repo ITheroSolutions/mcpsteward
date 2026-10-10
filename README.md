@@ -10,9 +10,13 @@ If this saves you time and you want to support the work, there is a
 optional, the tool is free either way.
 
 ```bash
-npm install -g mcpwarden
+npm install -g @itherosolutions/mcpwarden
 mcpwarden discover
 ```
+
+The package is published under a scope because npm reserves names that differ only by
+punctuation, and an unrelated package called `mcp-warden` already exists. The command
+it installs is plain `mcpwarden`.
 
 Or run from source:
 
@@ -154,9 +158,9 @@ jobs:
         with:
           node-version: 22
 
-      - run: npx mcpwarden verify --policy mcpwarden.policy.json
+      - run: npx @itherosolutions/mcpwarden verify --policy mcpwarden.policy.json
 
-      - run: npx mcpwarden migrate ./src --format sarif --output mcpwarden.sarif
+      - run: npx @itherosolutions/mcpwarden migrate ./src --format sarif --output mcpwarden.sarif
         if: always()
 
       - uses: github/codeql-action/upload-sarif@v3
@@ -264,7 +268,7 @@ policy cannot be mistaken for one that checked all of it.
 ## Programmatic use
 
 ```js
-import { inventory, conformServer, withServer } from 'mcpwarden/api';
+import { inventory, conformServer, withServer } from '@itherosolutions/mcpwarden/api';
 
 const machine = await inventory();
 
@@ -289,7 +293,7 @@ been given. Add it to any MCP client as a stdio server:
 ```json
 {
   "mcpServers": {
-    "mcpwarden": { "command": "npx", "args": ["-y", "-p", "mcpwarden", "mcpwarden-mcp"] }
+    "mcpwarden": { "command": "npx", "args": ["-y", "-p", "@itherosolutions/mcpwarden", "mcpwarden-mcp"] }
   }
 }
 ```

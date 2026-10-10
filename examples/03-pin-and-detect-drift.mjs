@@ -14,8 +14,8 @@
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
-import { captureServer, createPin, inventory } from 'mcpwarden/api';
-import { diffAgainstPin } from 'mcpwarden';
+import { captureServer, createPin, inventory } from '@itherosolutions/mcpwarden/api';
+import { diffAgainstPin } from '@itherosolutions/mcpwarden';
 
 const name = process.argv[2];
 

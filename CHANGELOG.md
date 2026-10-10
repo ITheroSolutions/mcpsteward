@@ -60,7 +60,7 @@ First release.
   checked, and the state of the ledger and policy.
 - Reports in terminal, JSON, NDJSON, Markdown, SARIF and HTML formats. Secrets are
   redacted once, before any format is rendered.
-- A programmatic API at `mcpwarden/api`.
+- A programmatic API at `@itherosolutions/mcpwarden/api`.
 - `mcpwarden-mcp`: mcpwarden as an MCP server exposing six tools, so an assistant can
   inspect the other servers it has been given. Speaks 2026-07-28 and also completes
   the older `initialize` handshake that current clients send. Tested against the
