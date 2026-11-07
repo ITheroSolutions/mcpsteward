@@ -507,3 +507,30 @@ com, dev and io domains. It was unused in all of them.
 the new name. `docs/formats.md` states both, and a test pins them to the code. Rule
 identifiers were renamed from their original prefix before first publication, which is
 the only point at which D-004's rule that identifiers are never renumbered allows it.
+
+## D-018: The MCP server is reachable from the main command, and listed in the registry
+
+**Decision:** `mcpsteward mcp` starts the same stdio server as `mcpsteward-mcp`. The
+package is listed in the official MCP Registry as `io.github.ITheroSolutions/mcpsteward`,
+published by a manually dispatched GitHub Actions workflow that signs in with OIDC.
+
+**Reasoning.** A registry entry for an npm package is launched as `npx <package>
+[arguments]`, which always runs the bin named after the package. The server lives in a
+second bin, so without a subcommand a registry client would start the command line
+tool and wait on a help screen. The subcommand is handled before any logger or
+configuration is created, so nothing but protocol traffic can reach stdout.
+
+The registry grants an organisation namespace only to an owner of that organisation,
+and its interactive sign in cannot currently see organisation roles. OIDC from a
+workflow in the organisation's own repository can, and it leaves no token stored
+anywhere, which matches the rule that the project keeps no secrets.
+
+**Rejected:** a personal namespace, which would tie the listing to one account rather
+than the organisation that publishes the package; and a stored personal access token,
+which is a credential to protect for no gain over OIDC.
+
+**Consequence.** `server.json` carries the version and must be updated with each
+release. The workflow refuses to run when its version or name disagree with
+`package.json`. It cannot run before the npm publish, since the registry checks the
+published package for the matching `mcpName`.
+

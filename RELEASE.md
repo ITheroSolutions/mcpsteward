@@ -99,6 +99,18 @@ node -e "import('mcpsteward').then(m => console.log(m.TARGET_REVISION))"
 npx mcpsteward doctor
 ```
 
+Then list the new version in the official MCP Registry. Set `version` and
+`packages[0].version` in `server.json` to the version just published, commit, and run
+the `MCP Registry` GitHub Actions workflow by hand. It signs in with GitHub OIDC, so
+there is no token to keep. It must run after the npm publish, because the registry
+checks that the npm package for that version exists and carries the matching
+`mcpName`.
+
+```bash
+gh workflow run registry.yml --repo ITheroSolutions/mcpsteward
+curl -s "https://registry.modelcontextprotocol.io/v0/servers?search=mcpsteward"
+```
+
 ---
 
 ## Scope of the current release

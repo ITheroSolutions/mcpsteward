@@ -152,3 +152,24 @@ describe('the official SDK client, which opens with the handshake', () => {
     }
   }, 60_000);
 });
+
+describe('the mcp command, which is how the MCP Registry launches it', () => {
+  // A registry client runs `npx mcpsteward mcp`, which reaches the main bin.
+  const CLI = fileURLToPath(new URL('../../dist/cli/index.js', import.meta.url));
+
+  it('starts the same server and keeps stdout to protocol traffic', async () => {
+    const transport = new StdioClientTransport({ command: process.execPath, args: [CLI, 'mcp'] });
+    const client = new Client({ name: 'real-client-test', version: '1.0.0' });
+
+    try {
+      await client.connect(transport);
+
+      expect(client.getServerVersion()?.name).toBe('mcpsteward');
+
+      const { tools } = await client.listTools();
+      expect(tools).toHaveLength(6);
+    } finally {
+      await client.close();
+    }
+  }, 60_000);
+});

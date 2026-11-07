@@ -7,6 +7,14 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-11-07
+
+### Added
+
+- `mcpsteward mcp` starts the MCP server on stdio, so a client can launch it with
+  `npx mcpsteward mcp` instead of naming the second command.
+- Listed in the official MCP Registry as `io.github.ITheroSolutions/mcpsteward`.
+
 ### Fixed
 
 - The logo was invisible on the npm page in npm's dark theme. npm shows only the
@@ -83,6 +91,7 @@ First release.
 - Zero runtime dependencies. No telemetry, no account, no cloud service, and no
   network access except to the servers you ask it to inspect.
 
-[Unreleased]: https://github.com/ITheroSolutions/mcpsteward/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/ITheroSolutions/mcpsteward/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/ITheroSolutions/mcpsteward/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/ITheroSolutions/mcpsteward/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/ITheroSolutions/mcpsteward/releases/tag/v0.1.0

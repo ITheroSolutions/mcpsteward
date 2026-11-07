@@ -1,0 +1,27 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.ITheroSolutions/mcpsteward",
+  "title": "mcpsteward",
+  "description": "Grade MCP servers against the 2026-07-28 spec and detect tool drift and poisoning. Local only.",
+  "repository": {
+    "url": "https://github.com/ITheroSolutions/mcpsteward",
+    "source": "github"
+  },
+  "version": "0.1.2",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "mcpsteward",
+      "version": "0.1.2",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "mcp"
+        }
+      ]
+    }
+  ]
+}

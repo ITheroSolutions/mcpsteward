@@ -1,6 +1,6 @@
 /** Help text and the version string. */
 
-export const VERSION = '0.1.1';
+export const VERSION = '0.1.2';
 
 export const HELP = `mcpsteward ${VERSION}
 Local-first MCP server inspection and trust toolkit.
@@ -37,6 +37,9 @@ COMMANDS
 
   doctor                Report environment, detected configs, ledger and policy
                         status, and supported protocol revisions.
+
+  mcp                   Run mcpsteward itself as an MCP server on stdio, for an
+                        AI client to use. Same as the mcpsteward-mcp command.
 
 OPTIONS
   --format <name>       terminal, json, ndjson, markdown, sarif, html.

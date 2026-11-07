@@ -86,6 +86,16 @@ export async function run(argv: readonly string[], io: CliIo): Promise<number> {
     return command === undefined && !flags.help ? EXIT_CODES.usageError : EXIT_CODES.success;
   }
 
+  // `mcpsteward mcp` starts the MCP server on stdio, so `npx mcpsteward mcp` works
+  // without naming the second bin. It runs before any logger or config so that
+  // nothing but protocol traffic can reach stdout. The server exits the process
+  // itself when stdin closes, so the returned promise never settles.
+  if (command === 'mcp') {
+    const { serve } = await import('../mcp/index.js');
+    serve();
+    return new Promise<number>(() => undefined);
+  }
+
   // Colour follows the terminal unless the caller was explicit, so redirected
   // output and CI logs stay free of escape codes without anyone asking.
   const effective: GlobalFlags = {
