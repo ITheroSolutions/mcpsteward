@@ -295,14 +295,10 @@ been given. Add it to any MCP client as a stdio server:
 ```json
 {
   "mcpServers": {
-    "mcpsteward": { "command": "npx", "args": ["-y", "mcpsteward", "mcp"] }
+    "mcpsteward": { "command": "npx", "args": ["-y", "-p", "mcpsteward", "mcpsteward-mcp"] }
   }
 }
 ```
-
-It is also listed in the official MCP Registry as
-`io.github.ITheroSolutions/mcpsteward`, so clients that read the registry can add it
-from there.
 
 It offers six tools: `discover_servers`, `verify_ledger` and `check_policy`, which read
 local files and connect to nothing, and `capture_surface`, `check_conformance` and
