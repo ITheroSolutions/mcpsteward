@@ -13,7 +13,10 @@ import {
   McpStewardError,
   PolicyViolationError,
   ProtocolViolationError,
+  ServerChangedError,
   TimeoutError,
+  ToolCallError,
+  ToolNotApprovedError,
   toMcpStewardError,
   TransportError,
   UnsupportedRevisionError,
@@ -35,6 +38,9 @@ describe('error taxonomy shape', () => {
     { Ctor: ConfigurationError, code: 'CONFIGURATION_INVALID' },
     { Ctor: TimeoutError, code: 'TIMEOUT' },
     { Ctor: InternalError, code: 'INTERNAL' },
+    { Ctor: ServerChangedError, code: 'SERVER_CHANGED' },
+    { Ctor: ToolNotApprovedError, code: 'TOOL_NOT_APPROVED' },
+    { Ctor: ToolCallError, code: 'TOOL_CALL_FAILED' },
   ] as const;
 
   for (const { Ctor, code } of cases) {

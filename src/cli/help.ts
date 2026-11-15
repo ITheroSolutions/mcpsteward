@@ -1,6 +1,6 @@
 /** Help text and the version string. */
 
-export const VERSION = '0.1.2';
+export const VERSION = '0.2.0';
 
 export const HELP = `mcpsteward ${VERSION}
 Local-first MCP server inspection and trust toolkit.

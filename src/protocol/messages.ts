@@ -134,8 +134,12 @@ export function buildRequestMeta(options: RequestMetaOptions): Record<string, Js
 export interface JsonRpcRequestOptions extends RequestMetaOptions {
   readonly id: string | number;
   readonly method: string;
-  /** Method parameters, excluding `_meta`, which is built separately. */
-  readonly params?: Record<string, JsonValue>;
+  /**
+   * Method parameters, excluding `_meta`, which is built separately. Ordinary
+   * JSON values: a tool call's arguments come from the caller as plain numbers,
+   * not as preserved number tokens.
+   */
+  readonly params?: Readonly<Record<string, unknown>>;
   /** Omit `_meta` entirely. Only for probing. */
   readonly omitMeta?: boolean;
 }

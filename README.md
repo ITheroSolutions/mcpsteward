@@ -285,6 +285,25 @@ Cancellation stays distinct from a timeout throughout. `dispose` is idempotent, 
 a session after disposal throws a typed error, and child processes are killed as a
 tree so nothing is left running.
 
+### Calling a tool only while it is what you approved
+
+`callApprovedTool` starts a server, compares it against a pin, and calls one tool only
+if nothing changed. The check and the call happen on one connection, so the server that
+was checked is the one that answers. Nothing is sent when the server changed
+(`ServerChangedError`) or the approval has no tool by that name (`ToolNotApprovedError`).
+
+```js
+import { callApprovedTool } from 'mcpsteward/api';
+
+const { result } = await callApprovedTool(server, pin, 'get_weather', { location: 'Sarnia' });
+console.log(result.isError ? 'the tool reported a failure' : result.text);
+```
+
+A tool call is sent exactly once and never retried, because a tool can change things.
+After a timeout, whether it ran is unknown. And this checks what the server advertises,
+not what the tool does when it runs: a tool whose description never changed can still
+do anything once called.
+
 Five runnable examples are in [`examples/`](examples).
 
 ## Use it from your AI client
@@ -295,10 +314,14 @@ been given. Add it to any MCP client as a stdio server:
 ```json
 {
   "mcpServers": {
-    "mcpsteward": { "command": "npx", "args": ["-y", "-p", "mcpsteward", "mcpsteward-mcp"] }
+    "mcpsteward": { "command": "npx", "args": ["-y", "mcpsteward", "mcp"] }
   }
 }
 ```
+
+It is also listed in the official MCP Registry as
+`io.github.ITheroSolutions/mcpsteward`, so clients that read the registry can add it
+from there.
 
 It offers six tools: `discover_servers`, `verify_ledger` and `check_policy`, which read
 local files and connect to nothing, and `capture_surface`, `check_conformance` and

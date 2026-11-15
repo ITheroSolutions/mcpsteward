@@ -14,8 +14,10 @@ import { hashCanonicalForm } from '../core/canonical.js';
 import { buildDescriptors, isJsonObject } from '../core/descriptor.js';
 import {
   CancellationError,
+  ConfigurationError,
   ProtocolViolationError,
   TimeoutError,
+  ToolCallError,
   TransportError,
   VersionNegotiationError,
 } from '../core/errors.js';
@@ -111,6 +113,38 @@ export interface CaptureResult {
   readonly evidence: CaptureEvidence;
 }
 
+/** Options for one tool call. */
+export interface ToolCallOptions {
+  /**
+   * Time budget for this call in milliseconds. Defaults to the client's own.
+   * Tools often take longer than a list request, so a host may want more here.
+   */
+  readonly timeoutMs?: number;
+  /** Cancel this call only, on top of whatever signal the client was given. */
+  readonly signal?: AbortSignal;
+}
+
+/** What a tool call returned. */
+export interface ToolCallResult {
+  /**
+   * The tool reported that it failed. The content usually says why. This is the
+   * tool's own answer, not a protocol failure, so it is returned rather than thrown.
+   */
+  readonly isError: boolean;
+  /**
+   * The content blocks as the server sent them. Numbers are kept as their source
+   * tokens, as everywhere in this package; `canonicalizeJsonValue` renders a block
+   * as JSON text.
+   */
+  readonly content: readonly JsonValue[];
+  /** The text of every `text` content block, joined by newlines. Empty when there are none. */
+  readonly text: string;
+  /** Structured output, when the tool returned any. */
+  readonly structuredContent: JsonObject | undefined;
+  /** The whole result, for anything the fields above do not cover. */
+  readonly raw: JsonObject;
+}
+
 /** What `server/discover` told us, when the server implements it. */
 export interface DiscoverOutcome {
   readonly implemented: boolean;
@@ -201,6 +235,8 @@ const LEGACY_REVISION: ProtocolRevision = '2025-11-25';
 export class McpClient {
   private readonly logger: Logger;
   private requestCounter = 0;
+  /** The revision this connection settled on, once a capture or a call has negotiated one. */
+  private negotiatedRevision: ProtocolRevision | undefined;
 
   constructor(
     private readonly transport: Transport,
@@ -495,6 +531,9 @@ export class McpClient {
     const startedAt = Date.now();
     const negotiation = await this.negotiateRevision();
     const revision = negotiation.used;
+    // A tool call later on this connection must speak the revision the capture
+    // did. For a handshake era server it is also the only one the handshake set up.
+    this.negotiatedRevision = revision;
 
     const listResults: { method: string; result: JsonObject }[] = [];
     const methodErrors: { method: string; code: number; message: string }[] = [];
@@ -636,6 +675,92 @@ export class McpClient {
   }
 
   /**
+   * Call one tool.
+   *
+   * Sent exactly once. The list requests a capture makes are retried after a
+   * transport failure because asking twice is harmless; a tool can change things,
+   * and a retry after a timeout could make the change twice. So a timeout or a
+   * dropped connection here is reported, and whether the tool ran is unknown.
+   *
+   * Uses the revision this connection already negotiated during a capture, and
+   * negotiates one first when nothing has been captured yet. It checks nothing
+   * about the server: comparing against an approval first is the caller's job, or
+   * `callApprovedTool` in the API, which does both on one connection.
+   *
+   * @param args The tool's arguments as ordinary JSON values.
+   */
+  async callTool(
+    name: string,
+    args: Readonly<Record<string, unknown>> = {},
+    options: ToolCallOptions = {},
+  ): Promise<ToolCallResult> {
+    if (typeof name !== 'string' || name.length === 0) {
+      throw new ConfigurationError('A tool name is required', { details: { key: 'name' } });
+    }
+    assertPlainJsonObject(args);
+
+    const signal = combineSignals(this.options.signal, options.signal);
+    if (signal?.aborted === true) {
+      throw new CancellationError('Tool call cancelled by the caller');
+    }
+
+    const revision = this.negotiatedRevision ?? (await this.negotiateRevision()).used;
+    this.negotiatedRevision = revision;
+
+    const request = buildRequest({
+      id: this.nextId(),
+      method: 'tools/call',
+      revision,
+      params: { name, arguments: args },
+      ...(eraOf(revision) === 'legacy' ? { omitMeta: true } : {}),
+    });
+
+    const response = asObject(
+      await this.transport.request(request, options.timeoutMs ?? this.timeoutMs, signal),
+    );
+    if (response === undefined) {
+      throw new ProtocolViolationError('tools/call response was not a JSON object', {
+        details: { method: 'tools/call' },
+      });
+    }
+
+    const error = readError(response);
+    if (error !== undefined) {
+      throw new ToolCallError(`The tool ${name} failed: ${error.message}`, {
+        details: { tool: name, code: error.code },
+      });
+    }
+
+    const result = readResult(response);
+    if (result === undefined) {
+      throw new ProtocolViolationError('tools/call returned neither a result nor an error', {
+        details: { method: 'tools/call' },
+      });
+    }
+
+    // An interim result asks the client for more before the tool can finish.
+    // Nothing here can supply it, and treating the interim result as the answer
+    // would hand the caller something the tool never said.
+    if (result['resultType'] === 'input_required') {
+      throw new ToolCallError(
+        `The tool ${name} asked for more input before it could finish, which mcpsteward does not provide`,
+        { details: { tool: name, resultType: 'input_required' } },
+      );
+    }
+
+    const rawContent = result['content'];
+    const content = rawContent !== undefined && isJsonArray(rawContent) ? rawContent : [];
+
+    return {
+      isError: result['isError'] === true,
+      content,
+      text: readTextContent(content),
+      structuredContent: asObject(result['structuredContent']),
+      raw: result,
+    };
+  }
+
+  /**
    * Send one request, with retries and backoff.
    *
    * Only transport failures are retried. A protocol level error is a real answer
@@ -755,6 +880,65 @@ function isJsonArray(value: JsonValue): value is readonly JsonValue[] {
 function asObject(value: JsonValue | undefined): JsonObject | undefined {
   if (value === undefined) return undefined;
   return isJsonObject(value) ? value : undefined;
+}
+
+/** The text of every `text` content block, in order. */
+function readTextContent(content: readonly JsonValue[]): string {
+  const parts: string[] = [];
+  for (const block of content) {
+    const record = asObject(block);
+    if (record?.['type'] === 'text' && typeof record['text'] === 'string') {
+      parts.push(record['text']);
+    }
+  }
+  return parts.join('\n');
+}
+
+/**
+ * Tool arguments must be a JSON object that survives serialisation unchanged.
+ *
+ * Checked before anything is sent, so a value `JSON.stringify` would drop or
+ * throw on, an `undefined`, a function, a `BigInt`, never reaches the server as
+ * something other than what the caller meant.
+ */
+function assertPlainJsonObject(args: unknown): void {
+  const invalid = (reason: string): never => {
+    throw new ConfigurationError(`Tool arguments ${reason}`, { details: { key: 'arguments' } });
+  };
+
+  if (typeof args !== 'object' || args === null || Array.isArray(args)) {
+    invalid('must be a JSON object');
+  }
+
+  const check = (value: unknown, depth: number): void => {
+    if (depth > 64) invalid('are nested too deeply');
+    if (value === null || typeof value === 'string' || typeof value === 'boolean') return;
+    if (typeof value === 'number') {
+      if (!Number.isFinite(value)) invalid('contain a number JSON cannot represent');
+      return;
+    }
+    if (Array.isArray(value)) {
+      for (const entry of value) check(entry, depth + 1);
+      return;
+    }
+    if (typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype) {
+      for (const entry of Object.values(value as Record<string, unknown>)) check(entry, depth + 1);
+      return;
+    }
+    invalid('contain a value that is not JSON');
+  };
+
+  check(args, 0);
+}
+
+/** One signal that fires when either does. */
+function combineSignals(
+  first: AbortSignal | undefined,
+  second: AbortSignal | undefined,
+): AbortSignal | undefined {
+  if (first === undefined) return second;
+  if (second === undefined) return first;
+  return AbortSignal.any([first, second]);
 }
 
 function readResult(response: JsonObject): JsonObject | undefined {

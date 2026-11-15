@@ -121,6 +121,105 @@ export function launchSettingsFor(
 }
 
 /**
+ * The environment variable names `server`'s own configuration reads.
+ *
+ * Placeholders in its arguments, environment values and headers, plus each
+ * variable it names whose value is missing or depends on a placeholder only its
+ * own client can fill, since {@link launchSettingsFor} falls back to looking that
+ * name up. A host that passes exactly these from its environment, and nothing
+ * else, starts the server the way the client that owns the configuration would,
+ * without handing it the rest of the environment.
+ *
+ * A variable whose configured value is filled from other variables, such as
+ * `API_KEY: "${env:SERVICE_TOKEN}"`, contributes only the names it reads. Passing
+ * `API_KEY` itself as well would let whatever the host's environment holds under
+ * that name win over what the configuration says, since passed variables win.
+ *
+ * A `ServerRef` built by hand has no configured values, so every name it lists is
+ * returned.
+ */
+export function environmentNamesFor(server: ServerRef): readonly string[] {
+  const values = configured.get(server.endpoint);
+  const names = new Set<string>();
+
+  const collect = (raw: string): void => {
+    for (const match of raw.matchAll(/\$\{([^}]*)\}/g)) {
+      const inner = match[1] ?? '';
+      const fromEnv = /^env:([A-Za-z_][A-Za-z0-9_]*)$/.exec(inner);
+      if (fromEnv?.[1] !== undefined) {
+        names.add(fromEnv[1]);
+        continue;
+      }
+      if (inner === 'userHome') {
+        names.add('USERPROFILE');
+        names.add('HOME');
+        continue;
+      }
+      const shell = /^([A-Za-z_][A-Za-z0-9_]*)(?::-.*)?$/.exec(inner);
+      if (shell?.[1] !== undefined && !EDITOR_VARIABLES.has(shell[1])) names.add(shell[1]);
+    }
+  };
+
+  if (server.endpoint.transport === 'http') {
+    for (const raw of Object.values(values?.headers ?? {})) collect(raw);
+  } else {
+    for (const raw of server.endpoint.args) collect(raw);
+    for (const name of server.endpoint.envNames) {
+      const raw = values?.env[name];
+      if (raw === undefined || readsOwnClientPlaceholder(raw)) names.add(name);
+      if (raw !== undefined) collect(raw);
+    }
+  }
+
+  return [...names].sort();
+}
+
+/**
+ * Whether a value has a placeholder no environment can fill, `${input:...}` or
+ * `${workspaceFolder}` for instance, so {@link launchSettingsFor} will look the
+ * variable's own name up instead.
+ */
+function readsOwnClientPlaceholder(raw: string): boolean {
+  for (const match of raw.matchAll(/\$\{([^}]*)\}/g)) {
+    const inner = match[1] ?? '';
+    const shell = /^([A-Za-z_][A-Za-z0-9_]*)(?::-.*)?$/.exec(inner);
+    const fillable =
+      /^env:[A-Za-z_][A-Za-z0-9_]*$/.test(inner) ||
+      inner === 'userHome' ||
+      (shell?.[1] !== undefined && !EDITOR_VARIABLES.has(shell[1]));
+    if (!fillable) return true;
+  }
+  return false;
+}
+
+/**
+ * Variables an editor fills in itself, such as `${workspaceFolder}`. They look
+ * like `${NAME}` but are not read from the environment, so they are never
+ * reported as names a server reads from it.
+ */
+const EDITOR_VARIABLES = new Set([
+  'workspaceFolder',
+  'workspaceFolderBasename',
+  'workspaceRoot',
+  'file',
+  'fileWorkspaceFolder',
+  'relativeFile',
+  'relativeFileDirname',
+  'fileBasename',
+  'fileBasenameNoExtension',
+  'fileExtname',
+  'fileDirname',
+  'fileDirnameBasename',
+  'cwd',
+  'lineNumber',
+  'columnNumber',
+  'selectedText',
+  'execPath',
+  'defaultBuildTask',
+  'pathSeparator',
+]);
+
+/**
  * Fill the placeholders in one configured value.
  *
  * All or nothing: a value with any placeholder that cannot be filled comes back

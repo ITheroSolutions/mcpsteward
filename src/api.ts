@@ -23,7 +23,12 @@
  */
 
 import { grade, type ConformanceReport } from './conformance/index.js';
-import { TransportError } from './core/errors.js';
+import {
+  ConfigurationError,
+  ServerChangedError,
+  ToolNotApprovedError,
+  TransportError,
+} from './core/errors.js';
 import { NOOP_LOGGER, type Logger } from './core/logger.js';
 import type {
   DriftReport,
@@ -32,13 +37,19 @@ import type {
   ServerSurface,
   TrustPin,
 } from './core/types.js';
-import { launchSettingsFor } from './discovery/configured.js';
+import { environmentNamesFor, launchSettingsFor } from './discovery/configured.js';
 import { discover, type DiscoveryOptions, type Inventory } from './discovery/index.js';
 import { Ledger } from './ledger/index.js';
 import { analyzeMigration, type AnalyzeOptions, type MigrationReport } from './migration/index.js';
 import { checkPolicy, type PolicyInput, type PolicyResult } from './policy/index.js';
 import type { Policy } from './core/types.js';
-import { McpClient, type CaptureProgress, type CaptureResult } from './protocol/client.js';
+import {
+  McpClient,
+  type CaptureProgress,
+  type CaptureResult,
+  type ToolCallOptions,
+  type ToolCallResult,
+} from './protocol/client.js';
 import { HttpTransport } from './protocol/http-transport.js';
 import { StdioTransport } from './protocol/stdio-transport.js';
 import { createPin, diffAgainstPin, diffSurfaces, type DiffOptions } from './trust/index.js';
@@ -64,6 +75,9 @@ export interface OperationOptions {
    */
   readonly env?: Readonly<Record<string, string>>;
 }
+
+/** Most severe first, for ordering changes in an error. */
+const RISK_ORDER: readonly string[] = ['critical', 'high', 'medium', 'low'];
 
 /**
  * A live connection to one server.
@@ -150,6 +164,88 @@ export class ServerSession {
 
     const captured = await this.client.capture(this.server, this.server.endpoint.transport);
     return { surface: captured.surface, report: grade(captured) };
+  }
+
+  /**
+   * Call one tool on this connection.
+   *
+   * Checks nothing about the server first. To call only what was approved, use
+   * {@link callApproved}. Sent exactly once and never retried, because a tool can
+   * change things; after a timeout, whether it ran is unknown.
+   */
+  async callTool(
+    name: string,
+    args: Readonly<Record<string, unknown>> = {},
+    options: ToolCallOptions = {},
+  ): Promise<ToolCallResult> {
+    this.assertUsable();
+    return await this.client.callTool(name, args, options);
+  }
+
+  /**
+   * Call one tool, only if the server still matches `pin`.
+   *
+   * The comparison and the call happen on this same connection, one straight
+   * after the other, so the server that was checked is the one that answers. A
+   * check on one connection followed by a call on a fresh one would let a server
+   * that changes between starts pass the check and then run something else.
+   *
+   * Nothing is sent to the tool when the server has changed in any way, or when
+   * the approval has no tool by that name.
+   *
+   * @throws ConfigurationError when the pin belongs to another server.
+   * @throws ServerChangedError when anything differs from the pin.
+   * @throws ToolNotApprovedError when the pinned surface has no such tool.
+   */
+  async callApproved(
+    pin: TrustPin,
+    name: string,
+    args: Readonly<Record<string, unknown>> = {},
+    options: ToolCallOptions & DiffOptions = {},
+  ): Promise<ApprovedToolCall> {
+    this.assertUsable();
+
+    if (pin.serverId !== this.server.id) {
+      throw new ConfigurationError('This approval belongs to a different server', {
+        details: { key: 'pin', serverId: this.server.id, pinServerId: pin.serverId },
+      });
+    }
+
+    const surface = await this.capture();
+    const report = diffAgainstPin(surface, pin, options);
+
+    if (report.events.length > 0) {
+      const changes = [...report.events]
+        .sort((a, b) => RISK_ORDER.indexOf(a.risk) - RISK_ORDER.indexOf(b.risk))
+        .map((event) => ({
+          kind: event.kind,
+          category: event.category,
+          identity: event.identity,
+          risk: event.risk,
+          summary: event.summary,
+        }));
+
+      throw new ServerChangedError(
+        `The server changed since it was approved (${String(changes.length)} change(s)), so the tool call was not sent`,
+        { details: { serverId: this.server.id, changes } },
+      );
+    }
+
+    const approved = surface.descriptors.some(
+      (descriptor) => descriptor.category === 'tool' && descriptor.identity === name,
+    );
+    if (!approved) {
+      throw new ToolNotApprovedError(`The approval has no tool named ${name}`, {
+        details: { serverId: this.server.id, tool: name },
+      });
+    }
+
+    const result = await this.client.callTool(name, args, {
+      ...(options.timeoutMs === undefined ? {} : { timeoutMs: options.timeoutMs }),
+      ...(options.signal === undefined ? {} : { signal: options.signal }),
+    });
+
+    return { result, surface, report };
   }
 
   /**
@@ -240,6 +336,43 @@ export async function diffServer(
   return { surface, report: diffAgainstPin(surface, pin, options) };
 }
 
+/**
+ * Start a server, confirm it still matches `pin`, call one tool, and stop it.
+ *
+ * The check and the call share one connection; see
+ * {@link ServerSession.callApproved}. `timeoutMs` and `signal` cover the whole
+ * operation's requests; `callTimeoutMs` sets a separate budget for the tool call
+ * itself, which often takes longer than listing tools does.
+ */
+export async function callApprovedTool(
+  server: ServerRef,
+  pin: TrustPin,
+  name: string,
+  args: Readonly<Record<string, unknown>> = {},
+  options: OperationOptions & DiffOptions & { readonly callTimeoutMs?: number } = {},
+): Promise<ApprovedToolCall> {
+  return await withServer(
+    server,
+    async (session) =>
+      await session.callApproved(pin, name, args, {
+        ...(options.weights === undefined ? {} : { weights: options.weights }),
+        ...(options.otherSurfaces === undefined ? {} : { otherSurfaces: options.otherSurfaces }),
+        ...(options.callTimeoutMs === undefined ? {} : { timeoutMs: options.callTimeoutMs }),
+      }),
+    options,
+  );
+}
+
+/** What {@link callApprovedTool} and {@link ServerSession.callApproved} return. */
+export interface ApprovedToolCall {
+  /** What the tool returned. */
+  readonly result: ToolCallResult;
+  /** What the server advertised when it was checked, just before the call. */
+  readonly surface: ServerSurface;
+  /** The comparison against the pin. Always free of changes when this is returned. */
+  readonly report: DriftReport;
+}
+
 /** Append a captured surface to a ledger. */
 export async function recordCapture(
   ledgerPath: string,
@@ -269,7 +402,7 @@ export async function analyzeSourceTree(
   return await analyzeMigration(path, options);
 }
 
-export { diffSurfaces, createPin };
+export { diffSurfaces, createPin, environmentNamesFor };
 
 export type {
   CaptureProgress,
@@ -284,5 +417,7 @@ export type {
   PolicyResult,
   ServerRef,
   ServerSurface,
+  ToolCallOptions,
+  ToolCallResult,
   TrustPin,
 };

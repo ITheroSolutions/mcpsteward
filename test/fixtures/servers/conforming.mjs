@@ -10,6 +10,7 @@
  * as both the correct server and several specifically broken ones.
  */
 
+import { appendFileSync } from 'node:fs';
 import { createInterface } from 'node:readline';
 
 const MODE = process.env.MCPSTEWARD_FIXTURE_MODE ?? 'conforming';
@@ -237,6 +238,48 @@ function handle(request) {
     case 'tools/list':
       respond(id, cacheable({ tools: toolsFor(MODE) }));
       return;
+
+    case 'tools/call': {
+      // Every call that arrives is written down when a log path is given, so a
+      // test can count how many times a tool was really asked for, and so prove
+      // a call is never retried.
+      const log = process.env.MCPSTEWARD_FIXTURE_CALL_LOG;
+      if (log) appendFileSync(log, `${JSON.stringify(params?.name ?? null)}\n`);
+
+      if (MODE === 'tool-hangs') return;
+
+      const name = params?.name;
+      const args = params?.arguments ?? {};
+
+      if (!toolsFor(MODE).some((tool) => tool.name === name)) {
+        respondError(id, -32602, `Unknown tool: ${name}`);
+        return;
+      }
+
+      // An interim result: the tool wants the client to supply something first.
+      if (MODE === 'tool-input-required') {
+        respond(id, { resultType: 'input_required', inputRequests: {} });
+        return;
+      }
+
+      // The tool reporting its own failure, as content rather than as an error.
+      if (MODE === 'tool-reports-error') {
+        respond(id, { content: [{ type: 'text', text: 'The weather service is down.' }], isError: true });
+        return;
+      }
+
+      if (name === 'get_weather') {
+        respond(id, {
+          content: [{ type: 'text', text: `Sunny in ${args.location}` }],
+          structuredContent: { location: args.location, temperatureC: 21 },
+        });
+        return;
+      }
+
+      // Echoes its arguments, so a test can see exactly what arrived.
+      respond(id, { content: [{ type: 'text', text: JSON.stringify(args) }] });
+      return;
+    }
 
     case 'prompts/list':
       respond(id, cacheable({ prompts: PROMPTS }));

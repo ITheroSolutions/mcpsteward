@@ -7,16 +7,35 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
-## [0.1.2] - 2026-11-07
+## [0.2.0] - 2026-11-14
+
+Includes what was prepared as 0.1.2, which was never published.
 
 ### Added
 
+- Tool calls. `ServerSession.callTool` calls one tool on an open connection, and
+  `callApprovedTool` (or `ServerSession.callApproved`) calls one only if the server
+  still matches its pin, with the check and the call on the same connection, so the
+  server that was checked is the one that answers. Nothing is sent when the server
+  changed or the approval has no such tool.
+- A tool call is sent exactly once and never retried, unlike the list requests a
+  capture makes, because a tool can change things. After a timeout, whether it ran
+  is unknown.
+- Three error types for these: `ServerChangedError` (with `details.changes`, most
+  severe first), `ToolNotApprovedError` and `ToolCallError`. A tool that reports its
+  own failure with `isError` comes back as a result, not a throw.
+- `environmentNamesFor(server)` in `mcpsteward/api`: the environment variable names a
+  server's own configuration reads. A host can pass exactly those in `env`, and
+  nothing else from its environment, to start a server the way its own client would.
 - `mcpsteward mcp` starts the MCP server on stdio, so a client can launch it with
   `npx mcpsteward mcp` instead of naming the second command.
 - Listed in the official MCP Registry as `io.github.ITheroSolutions/mcpsteward`.
 
 ### Fixed
 
+- `mcpsteward/protocol` has been in the package exports since 0.1.0 but had no module
+  behind it, so importing it failed. It now exports the client, both transports and
+  the message builders, and a test checks every export has a module.
 - The logo was invisible on the npm page in npm's dark theme. npm shows only the
   fallback image and ignores the colour scheme variants, so the fallback is now a
   version of the logo with its own background.

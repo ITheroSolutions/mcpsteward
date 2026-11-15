@@ -48,6 +48,12 @@ export const ERROR_CODES = [
   'CANCELLED',
   /** A defect in this package. Never the user's fault, always worth reporting. */
   'INTERNAL',
+  /** A server no longer matches the pin it was approved under. */
+  'SERVER_CHANGED',
+  /** A tool was asked for that the approval does not include. */
+  'TOOL_NOT_APPROVED',
+  /** The server answered a tool call with an error, or asked for input it cannot get. */
+  'TOOL_CALL_FAILED',
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
@@ -270,6 +276,45 @@ export class CancellationError extends McpStewardError {
 export class InternalError extends McpStewardError {
   constructor(message: string, options?: McpStewardErrorOptions) {
     super('INTERNAL', message, options);
+  }
+}
+
+/**
+ * A server no longer matches the pin it was approved under, so a tool call was
+ * refused before anything was sent.
+ *
+ * `details.changes` lists what differs, most severe first, so a host can show the
+ * person what to review rather than only that something changed.
+ */
+export class ServerChangedError extends McpStewardError {
+  constructor(message: string, options?: McpStewardErrorOptions) {
+    super('SERVER_CHANGED', message, options);
+  }
+}
+
+/**
+ * A tool was asked for that the approval does not include.
+ *
+ * Raised only after the server was confirmed unchanged, so the tool is missing
+ * from the server as well as from the approval. Usually a caller, or a model
+ * acting for one, guessing a tool name.
+ */
+export class ToolNotApprovedError extends McpStewardError {
+  constructor(message: string, options?: McpStewardErrorOptions) {
+    super('TOOL_NOT_APPROVED', message, options);
+  }
+}
+
+/**
+ * The server answered a tool call with a JSON-RPC error, or asked for input this
+ * package does not provide.
+ *
+ * Distinct from a result with `isError` set: that is the tool reporting its own
+ * failure as ordinary content, and comes back as a result rather than a throw.
+ */
+export class ToolCallError extends McpStewardError {
+  constructor(message: string, options?: McpStewardErrorOptions) {
+    super('TOOL_CALL_FAILED', message, options);
   }
 }
 

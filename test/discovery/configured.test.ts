@@ -10,7 +10,11 @@ import { describe, expect, it } from 'vitest';
 
 import type { ServerRef } from '../../src/core/types.js';
 import type { ClientDefinition } from '../../src/discovery/clients.js';
-import { launchSettingsFor, resolvePlaceholders } from '../../src/discovery/configured.js';
+import {
+  environmentNamesFor,
+  launchSettingsFor,
+  resolvePlaceholders,
+} from '../../src/discovery/configured.js';
 import { deduplicate, parseClientConfig } from '../../src/discovery/parse.js';
 
 const CLIENT: ClientDefinition = {
@@ -63,7 +67,7 @@ describe('resolvePlaceholders', () => {
 });
 
 describe('launchSettingsFor', () => {
-  it("gives a server the environment values from its own configuration", () => {
+  it('gives a server the environment values from its own configuration', () => {
     const server = inventoried({
       command: 'notes-server',
       env: { DATA_DIR: 'C:\\data', API_KEY: '${env:SERVICE_TOKEN}' },
@@ -100,7 +104,9 @@ describe('launchSettingsFor', () => {
       command: 'uv',
       args: ['--directory', '${input:server_source_dir}', 'run', 'server.py'],
     });
-    expect(() => launchSettingsFor(server, {})).toThrow(/only the client that owns this configuration/);
+    expect(() => launchSettingsFor(server, {})).toThrow(
+      /only the client that owns this configuration/,
+    );
   });
 
   it('gives an HTTP server its configured headers', () => {
@@ -127,6 +133,78 @@ describe('launchSettingsFor', () => {
       args: ['a'],
       env: { MODE: 'from-shell' },
     });
+  });
+});
+
+describe('environmentNamesFor', () => {
+  it('lists the names placeholders read, and nothing a value already supplies', () => {
+    const server = inventoried({
+      command: 'srv',
+      args: ['--root', '${env:ROOT}', '--home', '${userHome}'],
+      env: { DATA_DIR: 'C:\\data', API_KEY: '${env:SERVICE_TOKEN}', MODE: '${MODE:-fast}' },
+    });
+
+    expect(environmentNamesFor(server)).toEqual([
+      'HOME',
+      'MODE',
+      'ROOT',
+      'SERVICE_TOKEN',
+      'USERPROFILE',
+    ]);
+  });
+
+  it('leaves out a configured name filled from other variables, so the host cannot override it', () => {
+    const server = inventoried({
+      command: 'x',
+      env: { API_KEY: '${env:SERVICE_TOKEN}' },
+    });
+
+    const names = environmentNamesFor(server);
+    expect(names).toEqual(['SERVICE_TOKEN']);
+
+    // Passing exactly those names gives the server what its configuration says,
+    // even when the host also has a variable called API_KEY.
+    const host = { SERVICE_TOKEN: 'from-config', API_KEY: 'from-host' };
+    const passed = Object.fromEntries(names.map((name) => [name, host[name as keyof typeof host]]));
+    expect(launchSettingsFor(server, passed, passed).env).toEqual({
+      API_KEY: 'from-config',
+      SERVICE_TOKEN: 'from-config',
+    });
+  });
+
+  it('includes a name whose value only its own client can fill, since it is looked up instead', () => {
+    const server = inventoried({ command: 'x', env: { KEY: '${input:key}' } });
+    expect(environmentNamesFor(server)).toEqual(['KEY']);
+  });
+
+  it('does not report variables the editor fills itself, such as ${workspaceFolder}', () => {
+    const server = inventoried({
+      command: 'x',
+      args: ['--root', '${workspaceFolder}'],
+      env: { DATA: '${workspaceFolder}/data' },
+    });
+    // DATA is looked up by its own name, since the editor variable cannot be
+    // filled here; workspaceFolder itself is never treated as an environment name.
+    expect(environmentNamesFor(server)).toEqual(['DATA']);
+  });
+
+  it('reads the placeholders in an HTTP server headers', () => {
+    const server = inventoried({
+      url: 'https://mcp.example.com/mcp',
+      headers: { Authorization: 'Bearer ${env:EXAMPLE_TOKEN}', 'X-Static': 'yes' },
+    });
+    expect(environmentNamesFor(server)).toEqual(['EXAMPLE_TOKEN']);
+  });
+
+  it('returns every listed name for a ServerRef built by hand', () => {
+    const server: ServerRef = {
+      id: 'x',
+      name: 'x',
+      endpoint: { transport: 'stdio', command: 'x', args: [], envNames: ['B', 'A'] },
+      authPosture: 'none',
+      registrations: [],
+    };
+    expect(environmentNamesFor(server)).toEqual(['A', 'B']);
   });
 });
 

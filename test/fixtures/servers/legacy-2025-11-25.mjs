@@ -20,6 +20,7 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
+  CallToolRequestSchema,
   ListPromptsRequestSchema,
   ListResourcesRequestSchema,
   ListToolsRequestSchema,
@@ -51,5 +52,8 @@ const server = new Server(
 server.setRequestHandler(ListToolsRequestSchema, () => ({ tools: TOOLS }));
 server.setRequestHandler(ListPromptsRequestSchema, () => ({ prompts: PROMPTS }));
 server.setRequestHandler(ListResourcesRequestSchema, () => ({ resources: RESOURCES }));
+server.setRequestHandler(CallToolRequestSchema, (request) => ({
+  content: [{ type: 'text', text: `Definition of ${String(request.params.arguments?.term)}` }],
+}));
 
 await server.connect(new StdioServerTransport());

@@ -188,6 +188,20 @@ export async function startHttpFixture({ mode = 'conforming' } = {}) {
           respond(cacheable({ tools: TOOLS }, mode));
           return;
 
+        case 'tools/call': {
+          // MS-HTTP-003: a tools/call carries the tool name in Mcp-Name, and
+          // MS-HTTP-004 rejects one that disagrees with the body.
+          const name = request.params?.name;
+          if (mode !== 'ignores-header-mismatch' && req.headers['mcp-name'] !== name) {
+            fail(400, -32020, 'Header mismatch: Mcp-Name does not match body');
+            return;
+          }
+          respond({
+            content: [{ type: 'text', text: `Sunny in ${request.params?.arguments?.location}` }],
+          });
+          return;
+        }
+
         default:
           // MS-HTTP-005: an unimplemented method is 404 with -32601.
           fail(404, -32601, `Method not found: ${request.method}`);
