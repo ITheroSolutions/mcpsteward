@@ -449,6 +449,10 @@ mcpsteward says so and prints the update command rather than guessing.
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | How to add a rule, and the bar it must clear |
 | [`SECURITY.md`](SECURITY.md) | Disclosure process and in scope threats |
 
+## Feedback
+
+mcpsteward collects nothing about how it is used, so the only way to know what works is to hear it from you. Questions, ideas, and reports of how it went on your servers are welcome in [Discussions](https://github.com/ITheroSolutions/mcpsteward/discussions). Bugs go in [Issues](https://github.com/ITheroSolutions/mcpsteward/issues), and security problems follow [`SECURITY.md`](SECURITY.md).
+
 ## Licence
 
 MIT
